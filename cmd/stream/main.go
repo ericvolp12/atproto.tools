@@ -159,6 +159,7 @@ func LookingGlass(cctx *cli.Context) error {
 
 	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 	e.GET("/records", s.HandleGetRecords)
+	e.GET("/events", s.HandleGetEvents)
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cctx.Int("port")),

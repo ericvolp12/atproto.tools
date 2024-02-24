@@ -154,3 +154,119 @@ func (s *Stream) HandleGetRecords(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, resp)
 }
+
+type JSONEvent struct {
+	FirehoseSeq int64  `json:"seq"`
+	Repo        string `json:"repo"`
+	EventType   string `json:"event_type"`
+	Error       string `json:"error,omitempty"`
+	Time        int64  `json:"time"`
+}
+
+type EventsResponse struct {
+	Events []JSONEvent `json:"events"`
+	Error  string      `json:"error,omitempty"`
+}
+
+type EventsQuery struct {
+	DID       *syntax.DID
+	EventType *string
+	Seq       *int64
+	Limit     int
+}
+
+func dbEventToJSONEvent(e Event) JSONEvent {
+	return JSONEvent{
+		FirehoseSeq: e.FirehoseSeq,
+		Repo:        e.Repo,
+		EventType:   e.EventType,
+		Error:       e.Error,
+		Time:        e.Time,
+	}
+}
+
+// HandleGetEvents handles the GET /events endpoint
+func (s *Stream) HandleGetEvents(c echo.Context) error {
+	// Parse the query parameters
+	// did - Repo DID (optional)
+	// event_type - Event type (optional)
+	// seq - Firehose sequence number (optional)
+	// limit - Number of events to return (default=100)
+
+	// Validate the query parameters
+	didParam := c.QueryParam("did")
+	eventTypeParam := c.QueryParam("event_type")
+	seqParam := c.QueryParam("seq")
+	limitParam := c.QueryParam("limit")
+
+	resp := EventsResponse{}
+
+	query := EventsQuery{}
+
+	if didParam != "" {
+		did, err := syntax.ParseDID(didParam)
+		if err != nil {
+			resp.Error = fmt.Sprintf("invalid DID: %s", err)
+			return c.JSON(http.StatusBadRequest, resp)
+		}
+		query.DID = &did
+	}
+
+	if eventTypeParam != "" {
+		query.EventType = &eventTypeParam
+	}
+
+	if seqParam != "" {
+		seq, err := strconv.ParseInt(seqParam, 10, 64)
+		if err != nil {
+			resp.Error = fmt.Sprintf("invalid sequence number: %s", err)
+			return c.JSON(http.StatusBadRequest, resp)
+		}
+		query.Seq = &seq
+	}
+
+	if limitParam != "" {
+		limit, err := strconv.Atoi(limitParam)
+		if err != nil {
+			resp.Error = fmt.Sprintf("invalid limit: %s", err)
+			return c.JSON(http.StatusBadRequest, resp)
+		}
+		query.Limit = limit
+	} else {
+		query.Limit = 100
+	}
+
+	if query.Limit < 1 {
+		query.Limit = 100
+	}
+
+	if query.Limit > 1000 {
+		query.Limit = 1000
+	}
+
+	// Query the database
+	var events []Event
+	q := s.db
+	if query.DID != nil {
+		q = q.Where("repo = ?", query.DID.String())
+	}
+	if query.EventType != nil {
+		q = q.Where("event_type = ?", *query.EventType)
+	}
+	if query.Seq != nil {
+		q = q.Where("firehose_seq = ?", *query.Seq)
+	}
+	q = q.Order("firehose_seq DESC, event_type DESC").Limit(query.Limit).Find(&events)
+
+	if q.Error != nil {
+		resp.Error = q.Error.Error()
+		return c.JSON(http.StatusInternalServerError, resp)
+	}
+
+	// Convert the events to JSON
+	resp.Events = make([]JSONEvent, len(events))
+	for i, e := range events {
+		resp.Events[i] = dbEventToJSONEvent(e)
+	}
+	return c.JSON(http.StatusOK, resp)
+}
