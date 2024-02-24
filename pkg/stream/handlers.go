@@ -256,7 +256,7 @@ func (s *Stream) HandleGetEvents(c echo.Context) error {
 	if query.Seq != nil {
 		q = q.Where("firehose_seq = ?", *query.Seq)
 	}
-	q = q.Order("firehose_seq DESC, event_type DESC").Limit(query.Limit).Find(&events)
+	q = q.Order("firehose_seq DESC").Limit(query.Limit).Find(&events)
 
 	if q.Error != nil {
 		resp.Error = q.Error.Error()
