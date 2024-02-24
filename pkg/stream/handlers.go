@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,9 +10,18 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type JSONRecord struct {
+	FirehoseSeq int64                  `json:"seq"`
+	Repo        string                 `json:"repo"`
+	Collection  string                 `json:"collection"`
+	RKey        string                 `json:"rkey"`
+	Action      string                 `json:"action"`
+	Raw         map[string]interface{} `json:"raw"`
+}
+
 type RecordsResponse struct {
-	Records []Record `json:"records"`
-	Error   string   `json:"error,omitempty"`
+	Records []JSONRecord `json:"records"`
+	Error   string       `json:"error,omitempty"`
 }
 
 type RecordsQuery struct {
@@ -20,6 +30,24 @@ type RecordsQuery struct {
 	Rkey       *syntax.RecordKey
 	Seq        *int64
 	Limit      int
+}
+
+func dbRecordToJSONRecord(r Record) JSONRecord {
+	// Convert the RAW field to a JSON object
+	var rawAsJSON map[string]interface{}
+	err := json.Unmarshal(r.Raw, &rawAsJSON)
+	if err != nil {
+		rawAsJSON = map[string]interface{}{"error": err.Error()}
+	}
+
+	return JSONRecord{
+		FirehoseSeq: r.FirehoseSeq,
+		Repo:        r.Repo,
+		Collection:  r.Collection,
+		RKey:        r.RKey,
+		Action:      r.Action,
+		Raw:         rawAsJSON,
+	}
 }
 
 // HandleGetRecords handles the GET /records endpoint
@@ -119,6 +147,10 @@ func (s *Stream) HandleGetRecords(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, resp)
 	}
 
-	resp.Records = records
+	// Convert the records to JSON
+	resp.Records = make([]JSONRecord, len(records))
+	for i, r := range records {
+		resp.Records[i] = dbRecordToJSONRecord(r)
+	}
 	return c.JSON(http.StatusOK, resp)
 }
