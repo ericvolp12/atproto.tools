@@ -140,7 +140,7 @@ func (s *Stream) HandleGetRecords(c echo.Context) error {
 	if query.Seq != nil {
 		q = q.Where("firehose_seq = ?", *query.Seq)
 	}
-	q = q.Order("firehose_seq DESC, collection DESC, r_key DESC").Limit(query.Limit).Find(&records)
+	q = q.Order("id DESC").Limit(query.Limit).Find(&records)
 
 	if q.Error != nil {
 		resp.Error = q.Error.Error()
@@ -256,7 +256,7 @@ func (s *Stream) HandleGetEvents(c echo.Context) error {
 	if query.Seq != nil {
 		q = q.Where("firehose_seq = ?", *query.Seq)
 	}
-	q = q.Order("firehose_seq DESC").Limit(query.Limit).Find(&events)
+	q = q.Order("id DESC").Limit(query.Limit).Find(&events)
 
 	if q.Error != nil {
 		resp.Error = q.Error.Error()
