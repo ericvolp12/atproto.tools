@@ -13,7 +13,10 @@ import (
 
 	"github.com/ericvolp12/atp-looking-glass/pkg/stream"
 	"github.com/ericvolp12/bsky-experiments/pkg/tracing"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	slogecho "github.com/samber/slog-echo"
 	"go.opentelemetry.io/otel"
 
 	"github.com/urfave/cli/v2"
@@ -35,7 +38,7 @@ func main() {
 		},
 		&cli.IntFlag{
 			Name:    "port",
-			Usage:   "port to serve metrics on",
+			Usage:   "port to serve the http server on",
 			Value:   8080,
 			EnvVars: []string{"LG_PORT"},
 		},
@@ -144,33 +147,43 @@ func LookingGlass(cctx *cli.Context) error {
 		}
 	}()
 
-	mux := http.NewServeMux()
-	mux.Handle("/metrics", promhttp.Handler())
+	e := echo.New()
+	e.HideBanner = true
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	}))
+	e.Use(slogecho.New(logger))
+	e.Use(stream.MetricsMiddleware)
+	e.Use(middleware.Recover())
 
-	metricServer := &http.Server{
+	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
+	e.GET("/records", s.HandleGetRecords)
+
+	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cctx.Int("port")),
-		Handler: mux,
+		Handler: e,
 	}
 
-	// Startup metrics server
-	shutdownMetrics := make(chan struct{})
-	metricsShutdown := make(chan struct{})
+	// Startup HTTP server
+	shutdownHTTPServer := make(chan struct{})
+	httpServerShutdown := make(chan struct{})
 	go func() {
-		logger := logger.With("source", "metrics_server")
+		logger := logger.With("source", "http_server")
 
-		logger.Info("metrics server listening on port", "port", cctx.Int("port"))
+		logger.Info("http server listening on port", "port", cctx.Int("port"))
 
 		go func() {
-			if err := metricServer.ListenAndServe(); err != http.ErrServerClosed {
-				logger.Error("failed to start metrics server", "error", err)
+			if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
+				logger.Error("failed to start http server", "error", err)
 			}
 		}()
-		<-shutdownMetrics
-		if err := metricServer.Shutdown(ctx); err != nil {
-			logger.Error("failed to shut down metrics server", "error", err)
+		<-shutdownHTTPServer
+		if err := httpServer.Shutdown(ctx); err != nil {
+			logger.Error("failed to shut down http server", "error", err)
 		}
-		logger.Info("metrics server shut down")
-		close(metricsShutdown)
+		logger.Info("http server shut down")
+		close(httpServerShutdown)
 	}()
 
 	// Run the stream in a goroutine
@@ -207,10 +220,10 @@ func LookingGlass(cctx *cli.Context) error {
 	logger.Info("shutting down, waiting for routines to finish")
 	cancel()
 	close(shutdownLivenessChecker)
-	close(shutdownMetrics)
+	close(shutdownHTTPServer)
 
 	<-livenessCheckerShutdown
-	<-metricsShutdown
+	<-httpServerShutdown
 	<-streamShutdownFinished
 	logger.Info("shutdown complete")
 
