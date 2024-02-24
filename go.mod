@@ -12,6 +12,7 @@ require (
 	github.com/orandin/slog-gorm v1.1.0
 	github.com/prometheus/client_golang v1.18.0
 	github.com/samber/slog-echo v1.8.0
+	github.com/sevenNt/echo-pprof v0.1.1-0.20230131020615-4dd36891e14b
 	github.com/urfave/cli/v2 v2.27.1
 	go.opentelemetry.io/otel v1.24.0
 	gorm.io/driver/sqlite v1.5.4

@@ -11,12 +11,15 @@ import (
 	"syscall"
 	"time"
 
+	_ "net/http/pprof"
+
 	"github.com/ericvolp12/atp-looking-glass/pkg/stream"
 	"github.com/ericvolp12/bsky-experiments/pkg/tracing"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	slogecho "github.com/samber/slog-echo"
+	"github.com/sevenNt/echo-pprof"
 	"go.opentelemetry.io/otel"
 
 	"github.com/urfave/cli/v2"
@@ -160,6 +163,7 @@ func LookingGlass(cctx *cli.Context) error {
 	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 	e.GET("/records", s.HandleGetRecords)
 	e.GET("/events", s.HandleGetEvents)
+	echopprof.Wrap(e)
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cctx.Int("port")),

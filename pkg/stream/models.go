@@ -1,11 +1,19 @@
 package stream
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Record struct {
-	gorm.Model
+	ID        uint `gorm:"primarykey;index:idx_repo_id,priority:2,order:desc"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+
 	FirehoseSeq int64  `gorm:"index"`
-	Repo        string `gorm:"index:idx_path"`
+	Repo        string `gorm:"index:idx_path;index:idx_repo_id,priority:1"`
 	Collection  string `gorm:"index:idx_path"`
 	RKey        string `gorm:"index:idx_path"`
 	Action      string
@@ -13,9 +21,13 @@ type Record struct {
 }
 
 type Event struct {
-	gorm.Model
+	ID        uint `gorm:"primarykey;index:idx_repo_id,priority:2,order:desc"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+
 	FirehoseSeq int64  `gorm:"primaryKey"`
-	Repo        string `gorm:"index"`
+	Repo        string `gorm:"index;index:idx_repo_id,priority:1"`
 	EventType   string `gorm:"index"`
 	Error       string
 	Time        int64 `gorm:"index"`
