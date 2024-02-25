@@ -13,6 +13,7 @@ services:
       - LG_DEBUG=false
       - LG_SQLITE_PATH=/data/looking-glass.db
       - LG_MIGRATE_DB=true
+      - LG_EVT_RECORD_TTL=48h
     ports:
       - "6962:8080"
     volumes:
