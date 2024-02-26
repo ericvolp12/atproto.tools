@@ -161,7 +161,7 @@ func (s *Stream) Start(ctx context.Context) error {
 	rsc := events.RepoStreamCallbacks{
 		RepoCommit:    s.RepoCommit,
 		RepoHandle:    s.RepoHandle,
-		Identity:      s.Identity,
+		RepoIdentity:  s.RepoIdentity,
 		RepoInfo:      s.RepoInfo,
 		RepoMigrate:   s.RepoMigrate,
 		RepoTombstone: s.RepoTombstone,
@@ -391,9 +391,9 @@ func (s *Stream) RepoHandle(handle *atproto.SyncSubscribeRepos_Handle) error {
 
 }
 
-func (s *Stream) Identity(id *atproto.SyncSubscribeRepos_Identity) error {
+func (s *Stream) RepoIdentity(id *atproto.SyncSubscribeRepos_Identity) error {
 	ctx := context.Background()
-	ctx, span := tracer.Start(ctx, "Identity")
+	ctx, span := tracer.Start(ctx, "RepoIdentity")
 	defer span.End()
 
 	span.SetAttributes(

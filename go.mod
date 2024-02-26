@@ -4,7 +4,7 @@ go 1.21.1
 
 require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
-	github.com/bluesky-social/indigo v0.0.0-20240223221525-5e156f741ef7
+	github.com/bluesky-social/indigo v0.0.0-20240226174630-d89cf2225e71
 	github.com/ericvolp12/bsky-experiments v0.0.0-20240221172831-2eb513f42772
 	github.com/gorilla/websocket v1.5.1
 	github.com/ipfs/go-cid v0.4.1
