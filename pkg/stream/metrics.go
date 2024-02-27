@@ -20,7 +20,7 @@ var reqSz = promauto.NewHistogramVec(prometheus.HistogramOpts{
 var reqDur = promauto.NewHistogramVec(prometheus.HistogramOpts{
 	Name:    "http_request_duration_seconds",
 	Help:    "A histogram of latencies for requests.",
-	Buckets: prometheus.ExponentialBuckets(0.001, 2, 15),
+	Buckets: prometheus.ExponentialBuckets(0.0001, 2, 20),
 }, []string{"code", "method", "path"})
 
 var reqCnt = promauto.NewCounterVec(prometheus.CounterOpts{
