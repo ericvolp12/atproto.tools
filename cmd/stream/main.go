@@ -19,7 +19,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	slogecho "github.com/samber/slog-echo"
-	"github.com/sevenNt/echo-pprof"
+	echopprof "github.com/sevenNt/echo-pprof"
 	"go.opentelemetry.io/otel"
 
 	"github.com/urfave/cli/v2"
@@ -116,7 +116,13 @@ func LookingGlass(cctx *cli.Context) error {
 		}()
 	}
 
-	s, err := stream.NewStream(logger, cctx.String("ws-url"), cctx.String("sqlite-path"), cctx.Bool("migrate-db"), cctx.Duration("evt-record-ttl"))
+	s, err := stream.NewStream(
+		logger,
+		cctx.String("ws-url"),
+		cctx.String("sqlite-path"),
+		cctx.Bool("migrate-db"),
+		cctx.Duration("evt-record-ttl"),
+	)
 	if err != nil {
 		logger.Error("failed to create stream", "error", err)
 		return err

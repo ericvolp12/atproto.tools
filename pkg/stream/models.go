@@ -7,8 +7,8 @@ import (
 )
 
 type Record struct {
-	ID        uint `gorm:"primarykey;index:idx_records_repo_id,priority:2,order:desc"`
-	CreatedAt time.Time
+	ID        uint      `gorm:"primarykey;index:idx_records_repo_id,priority:2,order:desc"`
+	CreatedAt time.Time `gorm:"index,order:desc"`
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
@@ -21,7 +21,7 @@ type Record struct {
 }
 
 type Event struct {
-	CreatedAt time.Time
+	CreatedAt time.Time `gorm:"index,order:desc"`
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 

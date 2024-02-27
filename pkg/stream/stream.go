@@ -40,8 +40,9 @@ type Stream struct {
 
 	streamClosed chan struct{}
 
-	db  *gorm.DB
-	ttl time.Duration
+	writer *gorm.DB
+	reader *gorm.DB
+	ttl    time.Duration
 }
 
 var tracer = otel.Tracer("stream")
@@ -55,23 +56,53 @@ func NewStream(
 ) (*Stream, error) {
 	gormLogger := slogGorm.New()
 
-	db, err := gorm.Open(sqlite.Open(sqlitePath), &gorm.Config{
+	writer, err := gorm.Open(sqlite.Open(sqlitePath), &gorm.Config{
 		Logger: gormLogger,
 	})
+
+	sqlDB, err := writer.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get sql db: %w", err)
+	}
+
+	sqlDB.SetMaxOpenConns(1)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to open sqlite db: %w", err)
 	}
 
 	if migrate {
-		db.AutoMigrate(&Event{})
-		db.AutoMigrate(&Record{})
-		db.AutoMigrate(&Cursor{})
+		logger.Info("running database migrations")
+		err := writer.AutoMigrate(&Event{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to migrate events: %w", err)
+		}
+
+		err = writer.AutoMigrate(&Record{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to migrate records: %w", err)
+		}
+
+		err = writer.AutoMigrate(&Cursor{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to migrate cursor: %w", err)
+		}
+		logger.Info("database migrations complete")
 	}
 
 	// Set pragmas for performance
-	db.Exec("PRAGMA journal_mode=WAL;")
-	db.Exec("PRAGMA synchronous=normal;")
+	writer.Exec("PRAGMA journal_mode=WAL;")
+	writer.Exec("PRAGMA synchronous=normal;")
+
+	reader, err := gorm.Open(sqlite.Open(sqlitePath), &gorm.Config{
+		Logger: gormLogger,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to open sqlite db: %w", err)
+	}
+
+	reader.Exec("PRAGMA journal_mode=WAL;")
+	reader.Exec("PRAGMA synchronous=normal;")
 
 	u, err := url.Parse(socketURL)
 	if err != nil {
@@ -82,7 +113,8 @@ func NewStream(
 		logger:       logger,
 		socketURL:    u,
 		streamClosed: make(chan struct{}),
-		db:           db,
+		writer:       writer,
+		reader:       reader,
 		ttl:          ttl,
 	}, nil
 }
@@ -90,10 +122,10 @@ func NewStream(
 func (s *Stream) Start(ctx context.Context) error {
 	// Load the cursor if it exists
 	var c Cursor
-	if err := s.db.First(&c).Error; err != nil {
+	if err := s.writer.First(&c).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			c = Cursor{}
-			err := s.db.Create(&c).Error
+			err := s.writer.Create(&c).Error
 			if err != nil {
 				return fmt.Errorf("failed to create cursor: %w", err)
 			}
@@ -110,7 +142,7 @@ func (s *Stream) Start(ctx context.Context) error {
 				c.LastSeq = s.lastSeq
 				s.seqLk.RUnlock()
 				s.logger.Info("stream closed, saving cursor", "seq", c.LastSeq)
-				if err := s.db.Save(&c).Error; err != nil {
+				if err := s.writer.Save(&c).Error; err != nil {
 					s.logger.Error("failed to save cursor", "err", err)
 				}
 				s.logger.Info("cursor saved")
@@ -120,7 +152,7 @@ func (s *Stream) Start(ctx context.Context) error {
 				c.LastSeq = s.lastSeq
 				s.seqLk.RUnlock()
 				s.logger.Info("saving cursor", "seq", c.LastSeq)
-				if err := s.db.Save(&c).Error; err != nil {
+				if err := s.writer.Save(&c).Error; err != nil {
 					s.logger.Error("failed to save cursor", "err", err)
 				}
 			}
@@ -137,15 +169,21 @@ func (s *Stream) Start(ctx context.Context) error {
 					return
 				case <-ticker.C:
 					s.logger.Info("deleting old events and records")
-					if err := s.db.Exec("DELETE FROM events WHERE created_at < ?", time.Now().Add(-s.ttl)).Error; err != nil {
-						s.logger.Error("failed to delete old events", "err", err)
+					tx := s.writer.Exec("DELETE FROM events WHERE created_at < ?", time.Now().Add(-s.ttl))
+					if tx.Error != nil {
+						s.logger.Error("failed to delete old events", "err", tx.Error)
 					}
 
-					if err := s.db.Exec("DELETE FROM records WHERE created_at < ?", time.Now().Add(-s.ttl)).Error; err != nil {
-						s.logger.Error("failed to delete old records", "err", err)
+					eventsDeleted := tx.RowsAffected
+
+					tx = s.writer.Exec("DELETE FROM records WHERE created_at < ?", time.Now().Add(-s.ttl))
+					if tx.Error != nil {
+						s.logger.Error("failed to delete old records", "err", tx.Error)
 					}
 
-					s.logger.Info("old events and records deleted")
+					recordsDeleted := tx.RowsAffected
+
+					s.logger.Info("old events and records deleted", "events_deleted", eventsDeleted, "records", recordsDeleted)
 				}
 			}
 		}()
@@ -231,7 +269,7 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 	}
 
 	defer func() {
-		if err := s.db.Create(e).Error; err != nil {
+		if err := s.writer.Create(e).Error; err != nil {
 			s.logger.Error("failed to create event", "err", err)
 		}
 	}()
@@ -318,7 +356,7 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 				Raw:         recJSON,
 			}
 
-			if err := s.db.Create(dbRecord).Error; err != nil {
+			if err := s.writer.Create(dbRecord).Error; err != nil {
 				logger.Error("failed to create db record", "err", err)
 				e.Error += fmt.Sprintf("failed to create db record (path: %q): %v", op.Path, err)
 				continue
@@ -340,7 +378,7 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 				Action:      op.Action,
 			}
 
-			if err := s.db.Create(dbRecord).Error; err != nil {
+			if err := s.writer.Create(dbRecord).Error; err != nil {
 				logger.Error("failed to create db record", "err", err)
 				e.Error += fmt.Sprintf("failed to create db record (path: %q): %v", op.Path, err)
 				continue
@@ -380,7 +418,7 @@ func (s *Stream) RepoHandle(handle *atproto.SyncSubscribeRepos_Handle) error {
 	}
 
 	defer func() {
-		if err := s.db.Create(e).Error; err != nil {
+		if err := s.writer.Create(e).Error; err != nil {
 			s.logger.Error("failed to create event", "err", err)
 		}
 	}()
@@ -417,7 +455,7 @@ func (s *Stream) RepoIdentity(id *atproto.SyncSubscribeRepos_Identity) error {
 	}
 
 	defer func() {
-		if err := s.db.Create(e).Error; err != nil {
+		if err := s.writer.Create(e).Error; err != nil {
 			s.logger.Error("failed to create event", "err", err)
 		}
 	}()
@@ -461,7 +499,7 @@ func (s *Stream) RepoMigrate(migrate *atproto.SyncSubscribeRepos_Migrate) error 
 	}
 
 	defer func() {
-		if err := s.db.Create(e).Error; err != nil {
+		if err := s.writer.Create(e).Error; err != nil {
 			s.logger.Error("failed to create event", "err", err)
 		}
 	}()
@@ -497,7 +535,7 @@ func (s *Stream) RepoTombstone(tomb *atproto.SyncSubscribeRepos_Tombstone) error
 	}
 
 	defer func() {
-		if err := s.db.Create(e).Error; err != nil {
+		if err := s.writer.Create(e).Error; err != nil {
 			s.logger.Error("failed to create event", "err", err)
 		}
 	}()

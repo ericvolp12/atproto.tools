@@ -131,7 +131,7 @@ func (s *Stream) HandleGetRecords(c echo.Context) error {
 
 	// Query the database
 	var records []Record
-	q := s.db
+	q := s.reader
 	if query.DID != nil {
 		q = q.Where("repo = ?", query.DID.String())
 	}
@@ -250,7 +250,7 @@ func (s *Stream) HandleGetEvents(c echo.Context) error {
 
 	// Query the database
 	var events []Event
-	q := s.db
+	q := s.reader
 	if query.DID != nil {
 		q = q.Where("repo = ?", query.DID.String())
 	}
