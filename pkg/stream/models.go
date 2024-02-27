@@ -8,9 +8,9 @@ import (
 
 type Record struct {
 	ID        uint      `gorm:"primarykey;index:idx_records_repo_id,priority:2,order:desc"`
-	CreatedAt time.Time `gorm:"index,order:desc"`
+	CreatedAt time.Time `gorm:"index"`
 	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	DeletedAt gorm.DeletedAt
 
 	FirehoseSeq int64  `gorm:"index"`
 	Repo        string `gorm:"index:idx_path;index:idx_records_repo_id,priority:1"`
@@ -21,15 +21,15 @@ type Record struct {
 }
 
 type Event struct {
-	CreatedAt time.Time `gorm:"index,order:desc"`
+	CreatedAt time.Time `gorm:"index"`
 	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	DeletedAt gorm.DeletedAt
 
 	FirehoseSeq int64  `gorm:"primarykey;idx_events_repo_seq,priority:2,order:desc"`
 	Repo        string `gorm:"index;index:idx_events_repo_seq,priority:1"`
 	EventType   string `gorm:"index"`
 	Error       string
-	Time        int64 `gorm:"index"`
+	Time        int64
 }
 
 type Cursor struct {
