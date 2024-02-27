@@ -21,13 +21,12 @@ type Record struct {
 }
 
 type Event struct {
-	ID        uint `gorm:"primarykey;index:idx_events_repo_id,priority:2,order:desc"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-	FirehoseSeq int64  `gorm:"primaryKey"`
-	Repo        string `gorm:"index;index:idx_events_repo_id,priority:1"`
+	FirehoseSeq int64  `gorm:"primarykey;idx_events_repo_seq,priority:2,order:desc"`
+	Repo        string `gorm:"index;index:idx_events_repo_seq,priority:1"`
 	EventType   string `gorm:"index"`
 	Error       string
 	Time        int64 `gorm:"index"`
