@@ -269,11 +269,6 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 		Since:       evt.Since,
 	}
 
-	if evt.Prev != nil {
-		prev := (evt.Prev.String())
-		e.Prev = &prev
-	}
-
 	defer func() {
 		if err := s.writer.Create(e).Error; err != nil {
 			s.logger.Error("failed to create event", "err", err)

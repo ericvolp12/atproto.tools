@@ -30,7 +30,6 @@ type Event struct {
 	EventType   string `gorm:"index"`
 	Error       string
 	Time        int64
-	Prev        *string
 	Since       *string
 }
 
