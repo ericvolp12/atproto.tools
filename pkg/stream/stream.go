@@ -266,6 +266,12 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 		FirehoseSeq: evt.Seq,
 		Repo:        evt.Repo,
 		EventType:   "commit",
+		Since:       evt.Since,
+	}
+
+	if evt.Prev != nil {
+		prev := (evt.Prev.String())
+		e.Prev = &prev
 	}
 
 	defer func() {

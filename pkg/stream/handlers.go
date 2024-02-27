@@ -160,11 +160,13 @@ func (s *Stream) HandleGetRecords(c echo.Context) error {
 }
 
 type JSONEvent struct {
-	FirehoseSeq int64  `json:"seq"`
-	Repo        string `json:"repo"`
-	EventType   string `json:"event_type"`
-	Error       string `json:"error,omitempty"`
-	Time        int64  `json:"time"`
+	FirehoseSeq int64   `json:"seq"`
+	Repo        string  `json:"repo"`
+	EventType   string  `json:"event_type"`
+	Error       string  `json:"error,omitempty"`
+	Time        int64   `json:"time"`
+	Prev        *string `json:"prev"`
+	Since       *string `json:"since"`
 }
 
 type EventsResponse struct {
@@ -186,6 +188,8 @@ func dbEventToJSONEvent(e Event) JSONEvent {
 		EventType:   e.EventType,
 		Error:       e.Error,
 		Time:        e.Time,
+		Prev:        e.Prev,
+		Since:       e.Since,
 	}
 }
 
