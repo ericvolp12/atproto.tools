@@ -16,7 +16,7 @@ type JSONRecord struct {
 	Collection  string                 `json:"collection"`
 	RKey        string                 `json:"rkey"`
 	Action      string                 `json:"action"`
-	Raw         map[string]interface{} `json:"raw"`
+	Raw         map[string]interface{} `json:"raw,omitempty"`
 }
 
 type RecordsResponse struct {
@@ -33,21 +33,25 @@ type RecordsQuery struct {
 }
 
 func dbRecordToJSONRecord(r Record) JSONRecord {
-	// Convert the RAW field to a JSON object
-	var rawAsJSON map[string]interface{}
-	err := json.Unmarshal(r.Raw, &rawAsJSON)
-	if err != nil {
-		rawAsJSON = map[string]interface{}{"error": err.Error()}
-	}
-
-	return JSONRecord{
+	rec := JSONRecord{
 		FirehoseSeq: r.FirehoseSeq,
 		Repo:        r.Repo,
 		Collection:  r.Collection,
 		RKey:        r.RKey,
 		Action:      r.Action,
-		Raw:         rawAsJSON,
 	}
+
+	if r.Raw != nil {
+		// Convert the RAW field to a JSON object
+		var rawAsJSON map[string]interface{}
+		err := json.Unmarshal(r.Raw, &rawAsJSON)
+		if err != nil {
+			rawAsJSON = map[string]interface{}{"error": err.Error()}
+		}
+		rec.Raw = rawAsJSON
+	}
+
+	return rec
 }
 
 // HandleGetRecords handles the GET /records endpoint
