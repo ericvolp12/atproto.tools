@@ -8,8 +8,8 @@ const Welcome: FC<{}> = () => {
     return (
         <div className="bg-white mt-10">
             <div className="mx-auto max-w-7xl px-2 align-middle">
-                <h1 className="text-4xl font-bold">Welcome to ATProto Tools</h1>
-                <p className="text-lg">This is a tool to help you build and test ATProto applications.</p>
+                <h1 className="text-4xl font-bold">Welcome to AT Proto Tools</h1>
+                <p className="text-lg">This is a suite of tools to help you build and test AT Proto applications and infrastructure.</p>
             </div>
         </div >
     );
