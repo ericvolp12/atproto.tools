@@ -20,7 +20,7 @@ function RawRecord({ record, isOpen, setIsOpen }: RawRecordProps) {
                 Raw record content for: <pre className="text-sm">at://{record.repo}/{record.collection}/{record.rkey}</pre>
             </DialogDescription>
             <DialogBody className="min-w-full">
-                <JsonView value={record?.raw} style={nordTheme} shortenTextAfterLength={40} />
+                <JsonView value={record?.raw} style={nordTheme} shortenTextAfterLength={40} displayDataTypes={false} />
             </DialogBody>
             <DialogActions>
                 <Button onClick={() => setIsOpen(false)}>Close</Button>
