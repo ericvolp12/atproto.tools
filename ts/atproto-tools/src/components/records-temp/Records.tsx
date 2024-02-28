@@ -38,7 +38,7 @@ const Records: FC<{}> = () => {
 
 function RecordsTable({ records }: { records: JSONRecord[] }) {
     return (
-        <Table striped className="[--gutter:theme(spacing.6)] sm:[--gutter:theme(spacing.8)]">
+        <Table striped dense grid className="[--gutter:theme(spacing.6)] sm:[--gutter:theme(spacing.8)]">
             <TableHead>
                 <TableRow>
                     <TableHeader>Seq</TableHeader>
