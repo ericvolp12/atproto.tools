@@ -13,14 +13,14 @@ interface RawRecordProps {
 
 function RawRecord({ record, isOpen, setIsOpen }: RawRecordProps) {
     return (
-        (record === null) ? null :
+        (record.raw === null) ? null :
             <Dialog open={isOpen} onClose={setIsOpen} size="3xl">
                 <DialogTitle>Raw Record Viewer</DialogTitle>
                 <DialogDescription>
                     Raw record content for: <pre className="text-sm">at://{record.repo}/{record.collection}/{record.rkey}</pre>
                 </DialogDescription>
                 <DialogBody className="min-w-full">
-                    <JsonView value={record} style={nordTheme} shortenTextAfterLength={40} />
+                    <JsonView value={record.raw} style={nordTheme} shortenTextAfterLength={40} />
                 </DialogBody>
                 <DialogActions>
                     <Button onClick={() => setIsOpen(false)}>Close</Button>
