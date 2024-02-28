@@ -17,10 +17,10 @@ function RawRecord({ record, isOpen, setIsOpen }: RawRecordProps) {
         <Dialog open={isOpen} onClose={setIsOpen} size="3xl">
             <DialogTitle>Raw Record Viewer</DialogTitle>
             <DialogDescription>
-                Raw record content for: <pre className="text-sm">at://{record.repo}/{record.collection}/{record.rkey}</pre>
+                Raw record content for: <div className="text-sm font-mono">at://{record.repo}/{record.collection}/{record.rkey}</div>
             </DialogDescription>
             <DialogBody className="min-w-full">
-                <JsonView value={record?.raw} style={nordTheme} shortenTextAfterLength={40} displayDataTypes={false} />
+                <JsonView value={record?.raw} style={nordTheme} shortenTextAfterLength={300} displayDataTypes={false} className="rounded-md p-2 w-full" />
             </DialogBody>
             <DialogActions>
                 <Button onClick={() => setIsOpen(false)}>Close</Button>
