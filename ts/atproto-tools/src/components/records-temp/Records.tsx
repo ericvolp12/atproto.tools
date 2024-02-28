@@ -61,14 +61,14 @@ function RecordsTable({ records, setSelectedRecord, setIsRawRecordOpen }: {
             <TableBody>
                 {records.map((record) => (
                     <TableRow key={`${record.seq}_${record.collection}_${record.rkey}`}>
-                        <TableCell>{record.seq}</TableCell>
-                        <TableCell>{record.repo}</TableCell>
-                        <TableCell className="text-zinc-500">{record.collection}</TableCell>
-                        <TableCell>{record.rkey}</TableCell>
-                        <TableCell className="text-zinc-500">{record.action}</TableCell>
+                        <TableCell className="font-mono text-zinc-400">{record.seq}</TableCell>
+                        <TableCell className="font-mono">{record.repo}</TableCell>
+                        <TableCell className="text-zinc-400">{record.collection}</TableCell>
+                        <TableCell className="font-mono">{record.rkey}</TableCell>
+                        <TableCell className="text-zinc-400">{record.action}</TableCell>
                         <TableCell>
                             {record.raw && (
-                                <Button className="w-12 h-8 text-xs" onClick={() => {
+                                <Button className="w-12 h-6 text-xs" onClick={() => {
                                     setSelectedRecord(record);
                                     setIsRawRecordOpen(true);
                                 }}>View</Button>
