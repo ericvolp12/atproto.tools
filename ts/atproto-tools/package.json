@@ -4,12 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "codegen": "lex gen-ts-obj ../../../atproto/lexicons/com/atproto/*/* ../../../atproto/lexicons/app/bsky/*/* > src/lexicons.ts",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@atproto/lexicon": "^0.3.1",
     "@headlessui/react": "2.0.0-alpha.4",
     "@heroicons/react": "^2.1.1",
     "@uiw/react-json-view": "2.0.0-alpha.16",
@@ -19,6 +21,7 @@
     "react-router-dom": "^6.22.1"
   },
   "devDependencies": {
+    "@atproto/lex-cli": "^0.3.0",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
