@@ -11,7 +11,7 @@ const lex = new Lexicons()
 const knownLexicons: string[] = []
 lexicons.forEach((lexicon) => {
     if (lexicon.defs.main?.type === 'record') {
-        // tslint:disable-next-line
+        // @ts-ignore
         lex.add(lexicon)
         knownLexicons.push(lexicon.id)
     }
