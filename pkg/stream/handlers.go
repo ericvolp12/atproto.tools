@@ -110,6 +110,17 @@ func (s *Stream) HandleGetRecords(c echo.Context) error {
 		query.Seq = &seq
 	}
 
+	// Only allow querying by collection if a DID is provided
+	// Only allow querying by rkey if a DID and collection are provided
+	if query.Collection != nil && query.DID == nil {
+		resp.Error = "cannot query by collection without a DID"
+		return c.JSON(http.StatusBadRequest, resp)
+	}
+	if query.Rkey != nil && (query.DID == nil || query.Collection == nil) {
+		resp.Error = "cannot query by rkey without a DID and collection"
+		return c.JSON(http.StatusBadRequest, resp)
+	}
+
 	if limitParam != "" {
 		limit, err := strconv.Atoi(limitParam)
 		if err != nil {
