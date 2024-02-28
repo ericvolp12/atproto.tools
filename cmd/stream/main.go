@@ -13,7 +13,7 @@ import (
 
 	_ "net/http/pprof"
 
-	"github.com/ericvolp12/atp-looking-glass/pkg/stream"
+	"github.com/ericvolp12/atproto.tools/pkg/stream"
 	"github.com/ericvolp12/bsky-experiments/pkg/tracing"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

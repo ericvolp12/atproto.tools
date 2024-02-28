@@ -1,4 +1,4 @@
-module github.com/ericvolp12/atp-looking-glass
+module github.com/ericvolp12/atproto.tools
 
 go 1.21.1
 
