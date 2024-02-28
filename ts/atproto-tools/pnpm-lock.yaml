@@ -11,6 +11,9 @@ dependencies:
   '@heroicons/react':
     specifier: ^2.1.1
     version: 2.1.1(react@18.2.0)
+  '@uiw/react-json-view':
+    specifier: 2.0.0-alpha.16
+    version: 2.0.0-alpha.16(@babel/runtime@7.23.9)(react-dom@18.2.0)(react@18.2.0)
   clsx:
     specifier: ^2.1.0
     version: 2.1.0
@@ -76,6 +79,13 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
     dev: true
+
+  /@babel/runtime@7.23.9:
+    resolution: {integrity: sha512-0CX6F+BI2s9dkUqr08KFrAIZgNFj75rdBU/DjCyYLIaV/quFjkk6T+EJ2LkZHyZTbEV4L5p97mNkUsHl2wLFAw==}
+    engines: {node: '>=6.9.0'}
+    dependencies:
+      regenerator-runtime: 0.14.1
+    dev: false
 
   /@esbuild/aix-ppc64@0.19.12:
     resolution: {integrity: sha512-bmoCYyWdEL3wDQIVbcyzRyeKLgk2WtWLTWz1ZIAZF/EGbNOwSA6ew3PftJ1PqMiOOGu0OyFMzG53L0zqIpPeNA==}
@@ -1008,6 +1018,18 @@ packages:
       '@typescript-eslint/types': 7.1.0
       eslint-visitor-keys: 3.4.3
     dev: true
+
+  /@uiw/react-json-view@2.0.0-alpha.16(@babel/runtime@7.23.9)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-7xBbyeikxAnCL/iKZ0Vz6XKEalQz9VSxopp2YW+16ttnMw/q+4k0hyd4rIHMR/hob8kPCbLsSX+VCHpEaqyfhQ==}
+    peerDependencies:
+      '@babel/runtime': '>=7.10.0'
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
+    dependencies:
+      '@babel/runtime': 7.23.9
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
 
   /@ungap/structured-clone@1.2.0:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
@@ -2076,6 +2098,10 @@ packages:
     dependencies:
       picomatch: 2.3.1
     dev: true
+
+  /regenerator-runtime@0.14.1:
+    resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
+    dev: false
 
   /resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}

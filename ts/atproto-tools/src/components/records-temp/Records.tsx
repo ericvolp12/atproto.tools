@@ -2,9 +2,13 @@ import { FC, useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../catalyst/table'
 import { JSONRecord } from '../../models/Record'
 import { LOOKING_GLASS_HOST } from "../../constants";
+import { Button } from "../catalyst/button";
+import RawRecord from "./RawRecord";
 
 
 const Records: FC<{}> = () => {
+    const [selectedRecord, setSelectedRecord] = useState<JSONRecord | null>(null);
+    const [isRawRecordOpen, setIsRawRecordOpen] = useState(false);
     const [records, setRecords] = useState<JSONRecord[]>([]);
     const [error, setError] = useState<string | null>(null);
 
@@ -28,15 +32,20 @@ const Records: FC<{}> = () => {
         <div className="mt-6">
             <div className="mx-auto max-w-7xl px-2 align-middle">
                 <h1 className="text-4xl font-bold">View Firehose Records</h1>
-                <div className="mt-8 ">
-                    <RecordsTable records={records} />
+                <div className="mt-8">
+                    <RawRecord record={selectedRecord!} isOpen={isRawRecordOpen} setIsOpen={setIsRawRecordOpen} />
+                    <RecordsTable records={records} setSelectedRecord={setSelectedRecord} setIsRawRecordOpen={setIsRawRecordOpen} />
                 </div>
             </div>
         </div >
     );
 };
 
-function RecordsTable({ records }: { records: JSONRecord[] }) {
+function RecordsTable({ records, setSelectedRecord, setIsRawRecordOpen }: {
+    records: JSONRecord[],
+    setSelectedRecord: (record: JSONRecord) => void,
+    setIsRawRecordOpen: (isOpen: boolean) => void
+}) {
     return (
         <Table striped dense grid className="[--gutter:theme(spacing.6)] sm:[--gutter:theme(spacing.8)]">
             <TableHead>
@@ -46,6 +55,7 @@ function RecordsTable({ records }: { records: JSONRecord[] }) {
                     <TableHeader>Collection</TableHeader>
                     <TableHeader>Record Key</TableHeader>
                     <TableHeader>Action</TableHeader>
+                    <TableHeader>Record</TableHeader>
                 </TableRow>
             </TableHead>
             <TableBody>
@@ -56,11 +66,20 @@ function RecordsTable({ records }: { records: JSONRecord[] }) {
                         <TableCell className="text-zinc-500">{record.collection}</TableCell>
                         <TableCell>{record.rkey}</TableCell>
                         <TableCell className="text-zinc-500">{record.action}</TableCell>
+                        <TableCell>
+                            {record.raw && (
+                                <Button className="w-12 h-8 text-xs" onClick={() => {
+                                    setSelectedRecord(record);
+                                    setIsRawRecordOpen(true);
+                                }}>View</Button>
+                            )}
+                        </TableCell>
                     </TableRow>
                 ))}
             </TableBody>
         </Table>
     )
 }
+
 
 export default Records;
