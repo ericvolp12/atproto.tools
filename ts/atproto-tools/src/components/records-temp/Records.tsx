@@ -201,11 +201,21 @@ function SearchForm({ didQuery, collectionQuery, rkeyQuery, seqQuery, setSearchP
                         </Field>
                         <Field className="col-span-2">
                             <Label>Collection</Label>
-                            <Input name="collection" value={collectionSearch || ""} onChange={(e) => setCollectionSearch(e.target.value.trim())} />
+                            <Input
+                                name="collection"
+                                value={collectionSearch || ""}
+                                onChange={(e) => setCollectionSearch(e.target.value.trim())}
+                                disabled={didSearch === null || didSearch === ""}
+                            />
                         </Field>
                         <Field className="col-span-2">
                             <Label>Record Key</Label>
-                            <Input name="rkey" value={rkeySearch || ""} onChange={(e) => setRKeySearch(e.target.value.trim())} />
+                            <Input
+                                name="rkey"
+                                value={rkeySearch || ""}
+                                onChange={(e) => setRKeySearch(e.target.value.trim())}
+                                disabled={(didSearch === null || didSearch === "") || (collectionSearch === null || collectionSearch === "")}
+                            />
                         </Field>
 
                         <div className="justify-self-end mt-auto">
