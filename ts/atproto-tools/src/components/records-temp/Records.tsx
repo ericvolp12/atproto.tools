@@ -133,10 +133,10 @@ function RecordsTable({ records, setSelectedRecord, setIsRawRecordOpen }: {
             <TableBody>
                 {records.map((record) => (
                     <TableRow key={`${record.seq}_${record.collection}_${record.rkey}`}>
-                        <TableCell className="font-mono text-zinc-400" onClick={() => { copyOnClick(record.seq.toString()) }}>{record.seq}</TableCell>
-                        <TableCell className="font-mono" onClick={() => { copyOnClick(record.repo) }}>{record.repo}</TableCell>
-                        <TableCell className="text-zinc-400" onClick={() => { copyOnClick(record.collection) }}>{record.collection}</TableCell>
-                        <TableCell className="font-mono" onClick={() => { copyOnClick(record.rkey) }}>{record.rkey}</TableCell>
+                        <TableCell className="font-mono text-zinc-400 hover:cursor-copy" onClick={() => { copyOnClick(record.seq.toString()) }}>{record.seq}</TableCell>
+                        <TableCell className="font-mono hover:cursor-copy" onClick={() => { copyOnClick(record.repo) }}>{record.repo}</TableCell>
+                        <TableCell className="text-zinc-400 hover:cursor-copy" onClick={() => { copyOnClick(record.collection) }}>{record.collection}</TableCell>
+                        <TableCell className="font-mono hover:cursor-copy" onClick={() => { copyOnClick(record.rkey) }}>{record.rkey}</TableCell>
                         <TableCell className="text-zinc-400" >{record.action}</TableCell>
                         <TableCell>
                             {record.raw && (
