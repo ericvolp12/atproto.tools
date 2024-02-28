@@ -191,7 +191,11 @@ function SearchForm({ didQuery, collectionQuery, rkeyQuery, seqQuery, setSearchP
             <Fieldset className="mb-4">
                 <FieldGroup>
                     <div className="grid grid-cols-1 gap-8 sm:grid-cols-9 sm:gap-4">
-                        <Field className="col-span-2">
+                        <Field className="col-span-1">
+                            <Label>Seq</Label>
+                            <Input name="seq" value={seqSearch || ""} onChange={(e) => setSeqSearch(e.target.value.trim())} />
+                        </Field>
+                        <Field className="col-span-3">
                             <Label>DID</Label>
                             <Input name="did" value={didSearch || ""} onChange={(e) => setDIDSearch(e.target.value.trim())} />
                         </Field>
@@ -203,10 +207,7 @@ function SearchForm({ didQuery, collectionQuery, rkeyQuery, seqQuery, setSearchP
                             <Label>Record Key</Label>
                             <Input name="rkey" value={rkeySearch || ""} onChange={(e) => setRKeySearch(e.target.value.trim())} />
                         </Field>
-                        <Field className="col-span-2">
-                            <Label>Seq</Label>
-                            <Input name="seq" value={seqSearch || ""} onChange={(e) => setSeqSearch(e.target.value.trim())} />
-                        </Field>
+
                         <div className="justify-self-end mt-auto">
                             <Button onClick={handleSearch} type="submit">
                                 Search
