@@ -125,7 +125,7 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
     return (
         <Table
             striped dense grid
-            className="overflow-y-scroll [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
+            className="overflow-y-auto [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
             style={{ height: "80vh", colorScheme: "dark" }}
         >
             <TableHead>
