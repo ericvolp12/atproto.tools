@@ -9,10 +9,11 @@ import { Field, FieldGroup, Fieldset, Label } from "../catalyst/fieldset";
 import { Input } from "../catalyst/input";
 
 
-const Records: FC<{}> = () => {
+const Records: FC = () => {
     const [selectedRecord, setSelectedRecord] = useState<JSONRecord | null>(null);
     const [records, setRecords] = useState<JSONRecord[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [hasFetched, setHasFetched] = useState(false);
 
     const [didQuery, setDIDQuery] = useState<string | null>(null);
     const [collectionQuery, setCollectionQuery] = useState<string | null>(null);
@@ -61,7 +62,8 @@ const Records: FC<{}> = () => {
                     setRecords(newRecords);
                     setSelectedRecord(firstRecord);
                 }
-            });
+            })
+            .finally(() => setHasFetched(true));
     };
 
     useEffect(() => {
@@ -110,7 +112,7 @@ const Records: FC<{}> = () => {
                     <RecordsTable records={records} setSelectedRecord={setSelectedRecord} selectedRecord={selectedRecord} />
                 </div>
             </div>
-            <RawRecord record={selectedRecord!} />
+            <RawRecord record={selectedRecord!} key={hasFetched ? "a" : "b"} />
         </div>
     )
 };
