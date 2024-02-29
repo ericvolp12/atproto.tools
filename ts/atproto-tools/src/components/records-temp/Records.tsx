@@ -96,7 +96,7 @@ const Records: FC<{}> = () => {
 
     return (
         <div className="flex flex-col lg:flex-row min-w-0 min-h-0 gap-6 grow p-4 pt-6 lg:h-dvh">
-            <div className='flex-col grow min-h-0 flex gap-8 lg:basis-0'>
+            <div className='flex-col grow min-h-0 flex gap-8 lg:basis-0' style={{ colorScheme: "dark" }}>
                 <h1 className="text-4xl font-bold">View Firehose Records</h1>
                 {queryInitialized && <SearchForm
                     didQuery={didQuery}
@@ -110,7 +110,6 @@ const Records: FC<{}> = () => {
                     <RecordsTable records={records} setSelectedRecord={setSelectedRecord} selectedRecord={selectedRecord} />
                 </div>
             </div>
-
             <RawRecord record={selectedRecord!} />
         </div>
     )
@@ -125,7 +124,7 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
         <Table
             striped dense grid sticky
             className="mx-0 focus:outline-none [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
-            style={{ colorScheme: "dark" }}
+
             tabIndex={0}
             onKeyDown={(e) => {
                 if (e.key === "ArrowDown" && selectedRecord) {
