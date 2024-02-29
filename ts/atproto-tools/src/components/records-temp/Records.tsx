@@ -127,6 +127,21 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
             striped dense grid
             className="overflow-y-auto [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
             style={{ height: "80vh", colorScheme: "dark" }}
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === "ArrowDown" && selectedRecord) {
+                    const index = records.findIndex((record) => record.key === selectedRecord?.key);
+                    if (index < records.length - 1) {
+                        setSelectedRecord(records[index + 1]);
+                    }
+                }
+                if (e.key === "ArrowUp" && selectedRecord) {
+                    const index = records.findIndex((record) => record.key === selectedRecord?.key);
+                    if (index > 0) {
+                        setSelectedRecord(records[index - 1]);
+                    }
+                }
+            }}
         >
             <TableHead>
                 <TableRow>
