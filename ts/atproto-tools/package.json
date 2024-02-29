@@ -15,6 +15,7 @@
     "@headlessui/react": "2.0.0-alpha.4",
     "@heroicons/react": "^2.1.1",
     "@monaco-editor/react": "^4.6.0",
+    "@tanstack/react-query": "^5.24.1",
     "@uiw/react-json-view": "2.0.0-alpha.16",
     "clsx": "^2.1.0",
     "react": "^18.2.0",

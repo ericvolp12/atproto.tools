@@ -17,6 +17,9 @@ dependencies:
   '@monaco-editor/react':
     specifier: ^4.6.0
     version: 4.6.0(monaco-editor@0.46.0)(react-dom@18.2.0)(react@18.2.0)
+  '@tanstack/react-query':
+    specifier: ^5.24.1
+    version: 5.24.1(react@18.2.0)
   '@uiw/react-json-view':
     specifier: 2.0.0-alpha.16
     version: 2.0.0-alpha.16(@babel/runtime@7.23.9)(react-dom@18.2.0)(react@18.2.0)
@@ -905,6 +908,19 @@ packages:
   /@swc/types@0.1.5:
     resolution: {integrity: sha512-myfUej5naTBWnqOCc/MdVOLVjXUXtIA+NpDrDBKJtLLg2shUjBu3cZmB/85RyitKc55+lUUyl7oRfLOvkr2hsw==}
     dev: true
+
+  /@tanstack/query-core@5.24.1:
+    resolution: {integrity: sha512-DZ6Nx9p7BhjkG50ayJ+MKPgff+lMeol7QYXkvuU5jr2ryW/4ok5eanaS9W5eooA4xN0A/GPHdLGOZGzArgf5Cg==}
+    dev: false
+
+  /@tanstack/react-query@5.24.1(react@18.2.0):
+    resolution: {integrity: sha512-4+09JEdO4d6+Gc8Y/g2M/MuxDK5IY0QV8+2wL2304wPKJgJ54cBbULd3nciJ5uvh/as8rrxx6s0mtIwpRuGd1g==}
+    peerDependencies:
+      react: ^18.0.0
+    dependencies:
+      '@tanstack/query-core': 5.24.1
+      react: 18.2.0
+    dev: false
 
   /@tanstack/react-virtual@3.0.0-beta.60(react@18.2.0):
     resolution: {integrity: sha512-F0wL9+byp7lf/tH6U5LW0ZjBqs+hrMXJrj5xcIGcklI0pggvjzMNW9DdIBcyltPNr6hmHQ0wt8FDGe1n1ZAThA==}
