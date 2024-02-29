@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -14,6 +15,8 @@ import (
 type JSONRecord struct {
 	FirehoseSeq int64                  `json:"seq"`
 	Repo        string                 `json:"repo"`
+	Handle      string                 `json:"handle"`
+	PDS         string                 `json:"pds"`
 	Collection  string                 `json:"collection"`
 	RKey        string                 `json:"rkey"`
 	Action      string                 `json:"action"`
@@ -33,7 +36,7 @@ type RecordsQuery struct {
 	Limit      int
 }
 
-func dbRecordToJSONRecord(r Record) JSONRecord {
+func dbRecordIDToJSONRecord(r Record, id *Identity) JSONRecord {
 	rec := JSONRecord{
 		FirehoseSeq: r.FirehoseSeq,
 		Repo:        r.Repo,
@@ -50,6 +53,15 @@ func dbRecordToJSONRecord(r Record) JSONRecord {
 			rawAsJSON = map[string]interface{}{"error": err.Error()}
 		}
 		rec.Raw = rawAsJSON
+	}
+
+	if id != nil {
+		pdsURL, err := url.Parse(id.PDS)
+		if err != nil {
+			pdsURL = &url.URL{}
+		}
+		rec.Handle = id.Handle
+		rec.PDS = pdsURL.Host
 	}
 
 	return rec
@@ -163,10 +175,31 @@ func (s *Stream) HandleGetRecords(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, resp)
 	}
 
+	// Query the database for identities
+	var identities []Identity
+
+	var dids []string
+	for _, r := range records {
+		dids = append(dids, r.Repo)
+	}
+
+	q = s.reader.Where("d_id IN ?", dids).Find(&identities)
+	if q.Error != nil {
+		resp.Error = q.Error.Error()
+		return c.JSON(http.StatusInternalServerError, resp)
+	}
+
+	// Convert the identities to a map
+	identityMap := make(map[string]*Identity)
+	for i := range identities {
+		id := identities[i]
+		identityMap[id.DID] = &id
+	}
+
 	// Convert the records to JSON
 	resp.Records = make([]JSONRecord, len(records))
 	for i, r := range records {
-		resp.Records[i] = dbRecordToJSONRecord(r)
+		resp.Records[i] = dbRecordIDToJSONRecord(r, identityMap[r.Repo])
 	}
 	return c.JSON(http.StatusOK, resp)
 }

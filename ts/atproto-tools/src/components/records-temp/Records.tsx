@@ -174,7 +174,11 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
                         onClick={() => setSelectedRecord(record)}
                     >
                         <TableCell className="font-mono text-zinc-400">{record.seq}</TableCell>
-                        <TableCell className="font-mono" >{record.repo}</TableCell>
+                        <TableCell className="font-mono">
+                            <Tooltip text={record.handle || ""}>
+                                <span>{record.repo}</span>
+                            </Tooltip>
+                        </TableCell>
                         <TableCell className="text-zinc-400" >{record.collection}</TableCell>
                         <TableCell className="font-mono" >{record.rkey}</TableCell>
                         <TableCell className="text-zinc-400" >{record.action}</TableCell>
@@ -262,5 +266,20 @@ function SearchForm({ didQuery, collectionQuery, rkeyQuery, seqQuery, setSearchP
     )
 }
 
+function Tooltip({ children, text }: { children: React.ReactNode, text: string }) {
+    const [showTooltip, setShowTooltip] = useState(false);
+
+    return (
+        <div className="group relative" onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
+            <div className="absolute bottom-[calc(100%+0.5rem)] left-[50%] -translate-x-[50%] hidden group-hover:block w-auto">
+                <div className={`bottom-full right-0 rounded bg-black px-4 py-1 text-xs text-white whitespace-nowrap ${!showTooltip ? "hidden" : ""}`}>
+                    {text}
+                    <svg className="absolute left-0 top-full h-2 w-full text-black" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="0,0 127.5,127.5 255,0" /></svg>
+                </div>
+            </div>
+            {children}
+        </div>
+    )
+}
 
 export default Records;

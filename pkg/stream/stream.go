@@ -323,6 +323,24 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 
 	e.Time = t.UnixNano()
 
+	did, err := syntax.ParseDID(evt.Repo)
+	if err != nil {
+		s.logger.Error("failed to parse DID", "err", err)
+	} else {
+		id, fromCache, err := s.dir.LookupDIDWithCacheState(ctx, did)
+		if err != nil {
+			s.logger.Error("failed to lookup DID", "err", err)
+		} else if !fromCache {
+			if err := s.writer.Save(&Identity{
+				DID:    id.DID.String(),
+				Handle: id.Handle.String(),
+				PDS:    id.PDSEndpoint(),
+			}).Error; err != nil {
+				s.logger.Error("failed to save identity", "err", err)
+			}
+		}
+	}
+
 	for _, op := range evt.Ops {
 		switch op.Action {
 		case "create", "update":
@@ -413,24 +431,6 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 		default:
 			logger.Warn("unknown action", "action", op.Action)
 			e.Error += fmt.Sprintf("unknown action (path: %q): %q", op.Path, op.Action)
-		}
-	}
-
-	did, err := syntax.ParseDID(evt.Repo)
-	if err != nil {
-		s.logger.Error("failed to parse DID", "err", err)
-	} else {
-		id, fromCache, err := s.dir.LookupDIDWithCacheState(ctx, did)
-		if err != nil {
-			s.logger.Error("failed to lookup DID", "err", err)
-		} else if !fromCache {
-			if err := s.writer.Save(&Identity{
-				DID:    id.DID.String(),
-				Handle: id.Handle.String(),
-				PDS:    id.PDSEndpoint(),
-			}).Error; err != nil {
-				s.logger.Error("failed to save identity", "err", err)
-			}
 		}
 	}
 

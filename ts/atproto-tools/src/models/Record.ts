@@ -5,6 +5,10 @@ export declare interface JSONRecord {
   rkey: string;
   action: string;
   raw?: { [key: string]: any };
+
+  handle?: string;
+  pds?: string;
+
   key?: string;
 }
 
