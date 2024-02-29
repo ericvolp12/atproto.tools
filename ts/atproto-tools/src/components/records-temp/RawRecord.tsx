@@ -59,7 +59,7 @@ function RawRecord({ record, isOpen, setIsOpen }: RawRecordProps) {
     const formattedRaw = JSON.stringify(record.raw, null, 2)
     let numLines = formattedRaw.split('\n').length
     if (numLines < 5) numLines = 5
-    if (numLines > 30) numLines = 25
+    if (numLines > 25) numLines = 25
 
     return (
         <Dialog open={isOpen} onClose={setIsOpen} size="3xl">
