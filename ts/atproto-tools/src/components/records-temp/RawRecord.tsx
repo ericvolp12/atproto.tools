@@ -1,11 +1,10 @@
 import { JSONRecord } from '../../models/Record'
 import { Button } from '../catalyst/button'
 import { Dialog, DialogActions, DialogBody, DialogDescription, DialogTitle } from '../catalyst/dialog'
-import JsonView from '@uiw/react-json-view';
-import { nordTheme } from '@uiw/react-json-view/nord';
-import { Lexicons, ValidationError } from '@atproto/lexicon';
+import { Lexicons, ValidationError, jsonToLex } from '@atproto/lexicon';
 import { lexicons } from '../../lexicons.ts';
 import { Badge } from '../catalyst/badge.tsx';
+import Editor, { DiffEditor, useMonaco, loader } from '@monaco-editor/react';
 
 const lex = new Lexicons()
 const knownLexicons: string[] = []
@@ -25,26 +24,26 @@ interface RawRecordProps {
 }
 
 function RawRecord({ record, isOpen, setIsOpen }: RawRecordProps) {
-
     function validateLexicon(collection: string, raw: any): string {
         if (!knownLexicons.includes(collection)) {
             return 'Unknown Collection'
         }
 
         try {
-            lex.assertValidRecord(collection, raw)
+            lex.assertValidRecord(collection, jsonToLex(raw))
         } catch (e) {
             if (e instanceof ValidationError) {
+                console.log(e);
                 return e.message
             }
         }
         return 'Record is Valid'
     }
 
-    function badgeColor(collection: string, raw: any): "green" | "yellow" | "red" {
-        if (validateLexicon(collection, raw) === 'Record is Valid') {
+    function getBadgeColor(result: string): "green" | "yellow" | "red" {
+        if (result === 'Record is Valid') {
             return 'green'
-        } else if (validateLexicon(collection, raw) === 'Unknown Collection') {
+        } else if (result === 'Unknown Collection') {
             return 'yellow'
 
         } else {
@@ -52,29 +51,35 @@ function RawRecord({ record, isOpen, setIsOpen }: RawRecordProps) {
         }
     }
 
+    if (!record || !record.raw) return null
+
+    const lexValidationResult = validateLexicon(record.collection, record.raw)
+    const badgeColor = getBadgeColor(lexValidationResult)
+
+    const formattedRaw = JSON.stringify(record.raw, null, 2)
+    const numLines = formattedRaw.split('\n').length
+
     return (
-        (record && record?.raw) &&
         <Dialog open={isOpen} onClose={setIsOpen} size="3xl">
             <DialogTitle>Raw Record Viewer</DialogTitle>
             <DialogDescription>
                 Raw record content for: <span className="text-sm font-mono">at://{record.repo}/{record.collection}/{record.rkey}</span>
             </DialogDescription>
             <DialogBody className="min-w-full">
-                <JsonView
-                    value={record?.raw}
-                    style={nordTheme}
-                    shortenTextAfterLength={300}
-                    displayDataTypes={false}
-                    className="rounded-md p-2 w-full"
-                    enableClipboard={true}
+                <Editor
+                    width="100%"
+                    height={`${numLines * 1.5}rem`}
+                    language="json"
+                    theme="vs-dark"
+                    value={formattedRaw}
+                    options={{ readOnly: true, wordWrap: 'on' }}
                 />
             </DialogBody>
             <DialogActions className='justify-between'>
-                <Badge color={badgeColor(record.collection, record.raw)}>{validateLexicon(record.collection, record.raw)}</Badge>
+                <Badge color={badgeColor}>{lexValidationResult}</Badge>
                 <Button onClick={() => setIsOpen(false)}>Close</Button>
             </DialogActions>
         </Dialog>
-
     )
 }
 
