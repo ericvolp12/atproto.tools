@@ -106,7 +106,7 @@ const Records: FC<{}> = () => {
                     setSearchParams={setSearchParams}
                 />}
 
-                <div className="min-h-0 h-96 lg:h-auto grow overflow-y-auto">
+                <div className="min-h-0 h-96 lg:h-auto grow overflow-y-auto lg:overflow-x-hidden">
                     <RecordsTable records={records} setSelectedRecord={setSelectedRecord} selectedRecord={selectedRecord} />
                 </div>
             </div>
