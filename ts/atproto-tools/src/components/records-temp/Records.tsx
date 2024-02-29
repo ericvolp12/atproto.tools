@@ -126,19 +126,35 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
             className="mx-0 focus:outline-none [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
             tabIndex={0}
             onKeyDown={(e) => {
+                e.preventDefault();
                 if (e.key === "ArrowDown" && selectedRecord) {
                     const index = records.findIndex((record) => record.key === selectedRecord?.key);
                     if (index < records.length - 1) {
                         setSelectedRecord(records[index + 1]);
+                        // Scroll to the selected record
+                        if (selectedRecord.key) {
+                            const selectedRecordElement = document.getElementById(selectedRecord.key);
+                            if (selectedRecordElement) {
+                                selectedRecordElement.scrollIntoView({ block: "nearest" });
+                            }
+                        }
                     }
                 }
                 if (e.key === "ArrowUp" && selectedRecord) {
                     const index = records.findIndex((record) => record.key === selectedRecord?.key);
                     if (index > 0) {
                         setSelectedRecord(records[index - 1]);
+                        // Scroll to the selected record
+                        if (selectedRecord.key) {
+                            const selectedRecordElement = document.getElementById(selectedRecord.key);
+                            if (selectedRecordElement) {
+                                selectedRecordElement.scrollIntoView({ block: "nearest" });
+                            }
+                        }
                     }
                 }
-            }}
+            }
+            }
         >
             <TableHead>
                 <TableRow>
@@ -153,7 +169,8 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
                 {records.map((record) => (
                     <TableRow
                         key={record?.key || ""}
-                        className={selectedRecord?.key === record?.key ? "!bg-white/[15%] " : ""}
+                        id={record?.key || ""}
+                        className={(selectedRecord?.key === record?.key ? "!bg-white/[15%] " : "") + " scroll-m-36"}
                         onClick={() => setSelectedRecord(record)}
                     >
                         <TableCell className="font-mono text-zinc-400">{record.seq}</TableCell>

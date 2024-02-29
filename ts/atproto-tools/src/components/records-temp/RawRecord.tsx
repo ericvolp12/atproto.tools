@@ -1,10 +1,8 @@
 import { JSONRecord } from '../../models/Record'
-import { Button } from '../catalyst/button'
-import { Dialog, DialogActions, DialogBody, DialogDescription, DialogTitle } from '../catalyst/dialog'
 import { Lexicons, ValidationError, jsonToLex } from '@atproto/lexicon';
 import { lexicons } from '../../lexicons.ts';
 import { Badge } from '../catalyst/badge.tsx';
-import Editor, { DiffEditor, useMonaco, loader } from '@monaco-editor/react';
+import Editor from '@monaco-editor/react';
 import { Text } from '../catalyst/text.tsx';
 
 const lex = new Lexicons()
