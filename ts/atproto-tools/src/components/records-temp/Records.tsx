@@ -151,7 +151,7 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
                 {records.map((record) => (
                     <TableRow
                         key={record?.key || ""}
-                        className={selectedRecord?.key === record?.key ? "bg-white/[15%] dark:bg-white/[15%] dark:even:bg-white/[15%]" : ""}>
+                        className={selectedRecord?.key === record?.key ? "bg-white/[15%] even:bg-white/[15%] dark:bg-white/[15%] dark:even:bg-white/[15%]" : ""}>
                         <TableCell className="font-mono text-zinc-400 hover:cursor-copy" onClick={() => { copyOnClick(record.seq.toString()) }}>{record.seq}</TableCell>
                         <TableCell className="font-mono hover:cursor-copy" onClick={() => { copyOnClick(record.repo) }}>{record.repo}</TableCell>
                         <TableCell className="text-zinc-400 hover:cursor-copy" onClick={() => { copyOnClick(record.collection) }}>{record.collection}</TableCell>
