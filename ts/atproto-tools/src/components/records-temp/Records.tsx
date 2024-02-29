@@ -124,7 +124,7 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
     return (
         <Table
             striped dense grid
-            className="focus:outline-none [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
+            className="mx-0 focus:outline-none [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
             style={{ colorScheme: "dark" }}
             tabIndex={0}
             onKeyDown={(e) => {
