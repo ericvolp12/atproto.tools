@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/bluesky-social/indigo/atproto/syntax"
 	"github.com/labstack/echo/v4"
@@ -284,6 +285,119 @@ func (s *Stream) HandleGetEvents(c echo.Context) error {
 	resp.Events = make([]JSONEvent, len(events))
 	for i, e := range events {
 		resp.Events[i] = dbEventToJSONEvent(e)
+	}
+	return c.JSON(http.StatusOK, resp)
+}
+
+type JSONIdentity struct {
+	DID       string    `json:"did"`
+	Handle    string    `json:"handle"`
+	PDS       string    `json:"pds"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type IdentitiesResponse struct {
+	Identities []JSONIdentity `json:"identities"`
+	Error      string         `json:"error,omitempty"`
+}
+
+type IdentitiesQuery struct {
+	DID    *syntax.DID
+	Handle *syntax.Handle
+	PDS    *string
+	Limit  int
+}
+
+func dbIdentityToJSONIdentity(i Identity) JSONIdentity {
+	return JSONIdentity{
+		DID:       i.DID,
+		Handle:    i.Handle,
+		PDS:       i.PDS,
+		UpdatedAt: i.UpdatedAt,
+	}
+}
+
+func (s *Stream) HandleGetIdentities(c echo.Context) error {
+	// Parse the query parameters
+	// did - Repo DID (optional)
+	// handle - Repo Handle (optional)
+	// pds - Rep PDS endpoint (optional)
+	// limit - Number of identities to return (default=100)
+
+	// Validate the query parameters
+	didParam := c.QueryParam("did")
+	handleParam := c.QueryParam("handle")
+	pdsParam := c.QueryParam("pds")
+	limitParam := c.QueryParam("limit")
+
+	resp := IdentitiesResponse{}
+
+	query := IdentitiesQuery{}
+
+	if didParam != "" {
+		did, err := syntax.ParseDID(didParam)
+		if err != nil {
+			resp.Error = fmt.Sprintf("invalid DID: %s", err)
+			return c.JSON(http.StatusBadRequest, resp)
+		}
+		query.DID = &did
+	}
+
+	if handleParam != "" {
+		handle, err := syntax.ParseHandle(handleParam)
+		if err != nil {
+			resp.Error = fmt.Sprintf("invalid handle: %s", err)
+			return c.JSON(http.StatusBadRequest, resp)
+		}
+		query.Handle = &handle
+	}
+
+	if pdsParam != "" {
+		query.PDS = &pdsParam
+	}
+
+	if limitParam != "" {
+		limit, err := strconv.Atoi(limitParam)
+		if err != nil {
+			resp.Error = fmt.Sprintf("invalid limit: %s", err)
+			return c.JSON(http.StatusBadRequest, resp)
+		}
+		query.Limit = limit
+	} else {
+		query.Limit = 100
+	}
+
+	if query.Limit < 1 {
+		query.Limit = 100
+	}
+
+	if query.Limit > 1000 {
+		query.Limit = 1000
+	}
+
+	// Query the database
+	var identities []Identity
+	q := s.reader
+	if query.DID != nil {
+		q = q.Where("d_id = ?", query.DID.String())
+	}
+	if query.Handle != nil {
+		q = q.Where("handle = ?", query.Handle.String())
+	}
+	if query.PDS != nil {
+		q = q.Where("pds = ?", *query.PDS)
+	}
+	q = q.Order("created_at DESC").Limit(query.Limit).Find(&identities)
+
+	if q.Error != nil {
+		resp.Error = q.Error.Error()
+		return c.JSON(http.StatusInternalServerError, resp)
+	}
+
+	// Convert the identities to JSON
+	resp.Identities = make([]JSONIdentity, len(identities))
+	for i, id := range identities {
+		resp.Identities[i] = dbIdentityToJSONIdentity(id)
 	}
 	return c.JSON(http.StatusOK, resp)
 }

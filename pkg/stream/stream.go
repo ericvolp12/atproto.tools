@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/url"
 	"sync"
@@ -15,6 +16,7 @@ import (
 	"github.com/araddon/dateparse"
 	"github.com/bluesky-social/indigo/api/atproto"
 	"github.com/bluesky-social/indigo/atproto/data"
+	"github.com/bluesky-social/indigo/atproto/identity"
 	"github.com/bluesky-social/indigo/atproto/syntax"
 	"github.com/bluesky-social/indigo/events"
 	"github.com/bluesky-social/indigo/events/schedulers/parallel"
@@ -23,6 +25,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"golang.org/x/time/rate"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
@@ -43,6 +46,8 @@ type Stream struct {
 	writer *gorm.DB
 	reader *gorm.DB
 	ttl    time.Duration
+
+	dir *identity.CacheDirectory
 }
 
 var tracer = otel.Tracer("stream")
@@ -67,10 +72,6 @@ func NewStream(
 
 	sqlDB.SetMaxOpenConns(1)
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to open sqlite db: %w", err)
-	}
-
 	if migrate {
 		logger.Info("running database migrations")
 		err := writer.AutoMigrate(&Event{})
@@ -87,8 +88,32 @@ func NewStream(
 		if err != nil {
 			return nil, fmt.Errorf("failed to migrate cursor: %w", err)
 		}
+
+		err = writer.AutoMigrate(Identity{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to migrate identity: %w", err)
+		}
 		logger.Info("database migrations complete")
 	}
+
+	base := identity.BaseDirectory{
+		PLCURL: identity.DefaultPLCURL,
+		HTTPClient: http.Client{
+			Timeout: time.Second * 15,
+		},
+		PLCLimiter: rate.NewLimiter(rate.Limit(25), 1),
+		Resolver: net.Resolver{
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				d := net.Dialer{Timeout: time.Second * 5}
+				return d.DialContext(ctx, network, address)
+			},
+		},
+		TryAuthoritativeDNS: true,
+		// primary Bluesky PDS instance only supports HTTP resolution method
+		SkipDNSDomainSuffixes: []string{".bsky.social"},
+	}
+
+	dir := identity.NewCacheDirectory(&base, 250_000, time.Hour*12, time.Minute*2, time.Hour*12)
 
 	// Set pragmas for performance
 	writer.Exec("PRAGMA journal_mode=WAL;")
@@ -116,6 +141,7 @@ func NewStream(
 		writer:       writer,
 		reader:       reader,
 		ttl:          ttl,
+		dir:          &dir,
 	}, nil
 }
 
@@ -390,6 +416,24 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 		}
 	}
 
+	did, err := syntax.ParseDID(evt.Repo)
+	if err != nil {
+		s.logger.Error("failed to parse DID", "err", err)
+	} else {
+		id, fromCache, err := s.dir.LookupDIDWithCacheState(ctx, did)
+		if err != nil {
+			s.logger.Error("failed to lookup DID", "err", err)
+		} else if !fromCache {
+			if err := s.writer.Save(&Identity{
+				DID:    id.DID.String(),
+				Handle: id.Handle.String(),
+				PDS:    id.PDSEndpoint(),
+			}).Error; err != nil {
+				s.logger.Error("failed to save identity", "err", err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -409,6 +453,25 @@ func (s *Stream) RepoHandle(handle *atproto.SyncSubscribeRepos_Handle) error {
 		FirehoseSeq: handle.Seq,
 		Repo:        handle.Did,
 		EventType:   "handle",
+	}
+
+	did, err := syntax.ParseDID(handle.Did)
+	if err != nil {
+		s.logger.Error("failed to parse DID", "err", err)
+	} else {
+		s.dir.Purge(ctx, did.AtIdentifier())
+		id, err := s.dir.LookupDID(ctx, did)
+		if err != nil {
+			s.logger.Error("failed to lookup DID", "err", err)
+		} else {
+			if err := s.writer.Save(&Identity{
+				DID:    id.DID.String(),
+				Handle: id.Handle.String(),
+				PDS:    id.PDSEndpoint(),
+			}).Error; err != nil {
+				s.logger.Error("failed to save identity", "err", err)
+			}
+		}
 	}
 
 	t, err := dateparse.ParseAny(handle.Time)
@@ -446,6 +509,25 @@ func (s *Stream) RepoIdentity(id *atproto.SyncSubscribeRepos_Identity) error {
 		FirehoseSeq: id.Seq,
 		Repo:        id.Did,
 		EventType:   "identity",
+	}
+
+	did, err := syntax.ParseDID(id.Did)
+	if err != nil {
+		s.logger.Error("failed to parse DID", "err", err)
+	} else {
+		s.dir.Purge(ctx, did.AtIdentifier())
+		id, err := s.dir.LookupDID(ctx, did)
+		if err != nil {
+			s.logger.Error("failed to lookup DID", "err", err)
+		} else {
+			if err := s.writer.Save(&Identity{
+				DID:    id.DID.String(),
+				Handle: id.Handle.String(),
+				PDS:    id.PDSEndpoint(),
+			}).Error; err != nil {
+				s.logger.Error("failed to save identity", "err", err)
+			}
+		}
 	}
 
 	t, err := dateparse.ParseAny(id.Time)

@@ -37,3 +37,13 @@ type Cursor struct {
 	gorm.Model
 	LastSeq int64
 }
+
+type Identity struct {
+	CreatedAt time.Time `gorm:"index"`
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt
+
+	DID    string `gorm:"primarykey"`
+	Handle string `gorm:"index"`
+	PDS    string `gorm:"index"`
+}

@@ -4,7 +4,7 @@ go 1.21.1
 
 require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
-	github.com/bluesky-social/indigo v0.0.0-20240226174630-d89cf2225e71
+	github.com/bluesky-social/indigo v0.0.0-20240229025706-a262ba413ace
 	github.com/ericvolp12/bsky-experiments v0.0.0-20240221172831-2eb513f42772
 	github.com/gorilla/websocket v1.5.1
 	github.com/ipfs/go-cid v0.4.1
@@ -15,6 +15,7 @@ require (
 	github.com/sevenNt/echo-pprof v0.1.1-0.20230131020615-4dd36891e14b
 	github.com/urfave/cli/v2 v2.27.1
 	go.opentelemetry.io/otel v1.24.0
+	golang.org/x/time v0.3.0
 	gorm.io/driver/sqlite v1.5.4
 	gorm.io/gorm v1.25.5
 )
@@ -91,6 +92,8 @@ require (
 	github.com/whyrusleeping/cbor v0.0.0-20171005072247-63513f603b11 // indirect
 	github.com/whyrusleeping/cbor-gen v0.0.0-20240201211319-bf2168ca937c // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	gitlab.com/yawning/secp256k1-voi v0.0.0-20230925100816-f2616030848b // indirect
+	gitlab.com/yawning/tuplehash v0.0.0-20230713102510-df83abbf9a02 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.46.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.21.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.21.0 // indirect
@@ -106,7 +109,6 @@ require (
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231120223509-83a465c0220f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231120223509-83a465c0220f // indirect
