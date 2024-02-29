@@ -72,7 +72,7 @@ function RawRecord({ record }: RawRecordProps) {
                     language="json"
                     theme="vs-dark"
                     value={formattedRaw}
-                    options={{ readOnly: true, wordWrap: 'on' }}
+                    options={{ readOnly: true, wordWrap: 'on', lineNumbersMinChars: 3 }}
                 />
             </div>
             <div className="mt-2">
