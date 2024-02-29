@@ -5,11 +5,12 @@ import type React from 'react'
 import { createContext, useContext, useState } from 'react'
 import { Link } from './link'
 
-const TableContext = createContext<{ bleed: boolean; dense: boolean; grid: boolean; striped: boolean }>({
+const TableContext = createContext<{ bleed: boolean; dense: boolean; grid: boolean; striped: boolean; sticky: boolean }>({
   bleed: false,
   dense: false,
   grid: false,
   striped: false,
+  sticky: false,
 })
 
 export function Table({
@@ -17,17 +18,16 @@ export function Table({
   dense = false,
   grid = false,
   striped = false,
+  sticky = false,
   className,
   children,
   ...props
-}: { bleed?: boolean; dense?: boolean; grid?: boolean; striped?: boolean } & React.ComponentPropsWithoutRef<'div'>) {
+}: { bleed?: boolean; dense?: boolean; grid?: boolean; striped?: boolean; sticky?: boolean } & React.ComponentPropsWithoutRef<'div'>) {
   return (
-    <TableContext.Provider value={{ bleed, dense, grid, striped } as React.ContextType<typeof TableContext>}>
-      <div className="flow-root">
-        <div {...props} className={clsx(className, '-mx-[--gutter] overflow-x-auto whitespace-nowrap')}>
-          <div className={clsx('inline-block min-w-full align-middle', !bleed && 'sm:px-[--gutter]')}>
-            <table className="min-w-full text-left text-sm/6">{children}</table>
-          </div>
+    <TableContext.Provider value={{ bleed, dense, grid, striped, sticky } as React.ContextType<typeof TableContext>}>
+      <div {...props} className={clsx(className, '-mx-[--gutter] whitespace-nowrap')}>
+        <div className={clsx('inline-block min-w-full align-middle', !bleed && 'sm:px-[--gutter]')}>
+          <table className="min-w-full text-left text-sm/6">{children}</table>
         </div>
       </div>
     </TableContext.Provider>
@@ -78,16 +78,18 @@ export function TableRow({
 }
 
 export function TableHeader({ className, ...props }: React.ComponentPropsWithoutRef<'th'>) {
-  let { bleed, grid } = useContext(TableContext)
+  let { bleed, grid, sticky } = useContext(TableContext)
 
   return (
     <th
       {...props}
       className={clsx(
         className,
+        'bg-white dark:bg-slate-900',
         'border-b border-b-zinc-950/10 px-4 py-2 font-medium first:pl-[var(--gutter,theme(spacing.2))] last:pr-[var(--gutter,theme(spacing.2))] dark:border-b-white/10',
         grid && 'border-l border-l-zinc-950/5 first:border-l-0 dark:border-l-white/5',
-        !bleed && 'sm:first:pl-2 sm:last:pr-2'
+        !bleed && 'sm:first:pl-2 sm:last:pr-2',
+        sticky && `sticky top-0 z-30`
       )}
     />
   )
@@ -114,7 +116,7 @@ export function TableCell({ className, children, ...props }: React.ComponentProp
       {href && (
         <Link
           data-row-link
-          href={href}
+          to={href}
           target={target}
           aria-label={title}
           tabIndex={cellRef?.previousElementSibling === null ? 0 : -1}

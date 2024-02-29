@@ -94,27 +94,26 @@ const Records: FC<{}> = () => {
         setQueryInitialized(true);
     }, [searchParams]);
 
-
     return (
-        <div className="grid grid-cols-2 mx-4 gap-6 h-screen">
-            <div className="mt-6 max-h-full">
+        <div className="flex flex-col lg:flex-row min-w-0 min-h-0 gap-6 grow p-4 pt-6 lg:h-dvh">
+            <div className='flex-col grow min-h-0 flex gap-8 lg:basis-0'>
                 <h1 className="text-4xl font-bold">View Firehose Records</h1>
-                <div className="mt-8 max-h-full">
-                    {queryInitialized && <SearchForm
-                        didQuery={didQuery}
-                        collectionQuery={collectionQuery}
-                        rkeyQuery={rkeyQuery}
-                        seqQuery={seqQuery}
-                        setSearchParams={setSearchParams}
-                    />}
+                {queryInitialized && <SearchForm
+                    didQuery={didQuery}
+                    collectionQuery={collectionQuery}
+                    rkeyQuery={rkeyQuery}
+                    seqQuery={seqQuery}
+                    setSearchParams={setSearchParams}
+                />}
+
+                <div className="min-h-0 h-96 lg:h-auto grow overflow-y-auto">
                     <RecordsTable records={records} setSelectedRecord={setSelectedRecord} selectedRecord={selectedRecord} />
                 </div>
             </div>
-            <div className="mt-10">
-                <RawRecord record={selectedRecord!} />
-            </div>
-        </div >
-    );
+
+            <RawRecord record={selectedRecord!} />
+        </div>
+    )
 };
 
 function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
@@ -124,9 +123,9 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
 }) {
     return (
         <Table
-            striped dense grid
-            className="overflow-y-auto focus:outline-none [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
-            style={{ height: "80vh", colorScheme: "dark" }}
+            striped dense grid sticky
+            className="mx-0 focus:outline-none [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
+            style={{ colorScheme: "dark" }}
             tabIndex={0}
             onKeyDown={(e) => {
                 if (e.key === "ArrowDown" && selectedRecord) {
