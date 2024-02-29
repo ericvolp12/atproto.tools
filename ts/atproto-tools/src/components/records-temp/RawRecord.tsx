@@ -69,7 +69,7 @@ function RawRecord({ record }: RawRecordProps) {
     return (
         <div className='flex grow flex-col min-h-0 pt-12 lg:basis-0'>
             <Text className="mb-2">
-                Raw record content for: <span className="text-sm font-mono">at://{record.repo}/{record.collection}/{record.rkey}</span>
+                Raw record content for: <span className="text-sm font-mono break-all">at://{record.repo}/{record.collection}/{record.rkey}</span>
             </Text>
 
             <div className='grow h-96 lg:h-auto'>
