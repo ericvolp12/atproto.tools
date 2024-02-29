@@ -173,9 +173,13 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
                         className={(selectedRecord?.key === record?.key ? "!bg-white/[15%] " : "") + " scroll-m-36"}
                         onClick={() => setSelectedRecord(record)}
                     >
-                        <TableCell className="font-mono text-zinc-400">{record.seq}</TableCell>
+                        <TableCell className="font-mono text-zinc-400">
+                            <Tooltip text={record.pds || ""} position="right">
+                                <span>{record.seq}</span>
+                            </Tooltip>
+                        </TableCell>
                         <TableCell className="font-mono">
-                            <Tooltip text={record.handle || ""}>
+                            <Tooltip text={record.handle || ""} position="top">
                                 <span>{record.repo}</span>
                             </Tooltip>
                         </TableCell>
@@ -266,15 +270,31 @@ function SearchForm({ didQuery, collectionQuery, rkeyQuery, seqQuery, setSearchP
     )
 }
 
-function Tooltip({ children, text }: { children: React.ReactNode, text: string }) {
+type PositionKey = "top" | "bottom" | "left" | "right";
+
+const positionStyles: { [key in PositionKey]: string } = {
+    top: "bottom-[calc(100%+0.5rem)] left-[38%] -translate-x-[50%]",
+    bottom: "top-[calc(100%+0.5rem)] left-[38%] -translate-x-[50%]",
+    left: "right-[calc(100%+0.5rem)] top-[38%] -translate-y-[50%]",
+    right: "left-[calc(100%+0.5rem)] top-[38%] -translate-y-[50%]",
+};
+
+const positionSVGs: { [key in PositionKey]: JSX.Element } = {
+    top: <svg className="absolute left-0 top-full h-2 w-full text-black" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="0,0 127.5,127.5 255,0" /></svg>,
+    bottom: <svg className="absolute left-0 bottom-full h-2 w-full text-black" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="0,0 127.5,127.5 255,0" /></svg>,
+    left: <svg className="absolute left-full top-0 h-full w-2 text-black" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="0,0 127.5,127.5 0,255" /></svg>,
+    right: <svg className="absolute right-full top-0 h-full w-2 text-black" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="255,0 0,127.5 255,255" /></svg>,
+};
+
+function Tooltip({ children, text, position }: { children: React.ReactNode, text: string, position: PositionKey }) {
     const [showTooltip, setShowTooltip] = useState(false);
 
     return (
         <div className="group relative" onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
-            <div className="absolute bottom-[calc(100%+0.5rem)] left-[50%] -translate-x-[50%] hidden group-hover:block w-auto">
-                <div className={`bottom-full right-0 rounded bg-black px-4 py-1 text-xs text-white whitespace-nowrap ${!showTooltip ? "hidden" : ""}`}>
+            <div className={`z-30 absolute ${positionStyles[position]} hidden group-hover:block w-auto transition ease-in-out duration-300 ${!showTooltip ? "hidden opacity-0" : "opacity-100"}`}>
+                <div className="bottom-full right-0 rounded bg-black px-4 py-1 text-xs text-white whitespace-nowrap">
                     {text}
-                    <svg className="absolute left-0 top-full h-2 w-full text-black" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="0,0 127.5,127.5 255,0" /></svg>
+                    {positionSVGs[position]}
                 </div>
             </div>
             {children}
