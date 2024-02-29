@@ -122,15 +122,6 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
     selectedRecord: JSONRecord | null,
     setSelectedRecord: (record: JSONRecord) => void,
 }) {
-    const copyOnClick = async (text: string) => {
-        try {
-            await navigator.clipboard.writeText(text);
-            console.log(`Copied "${text}" to clipboard`);
-        } catch (err) {
-            console.error(`Failed to copy "${text}": `, err);
-        }
-    }
-
     return (
         <Table
             striped dense grid
@@ -144,26 +135,20 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
                     <TableHeader>Collection</TableHeader>
                     <TableHeader>Record Key</TableHeader>
                     <TableHeader>Action</TableHeader>
-                    <TableHeader>Record</TableHeader>
                 </TableRow>
             </TableHead>
             <TableBody>
                 {records.map((record) => (
                     <TableRow
                         key={record?.key || ""}
-                        className={selectedRecord?.key === record?.key ? "!bg-white/[15%] " : ""}>
-                        <TableCell className="font-mono text-zinc-400 hover:cursor-copy" onClick={() => { copyOnClick(record.seq.toString()) }}>{record.seq}</TableCell>
-                        <TableCell className="font-mono hover:cursor-copy" onClick={() => { copyOnClick(record.repo) }}>{record.repo}</TableCell>
-                        <TableCell className="text-zinc-400 hover:cursor-copy" onClick={() => { copyOnClick(record.collection) }}>{record.collection}</TableCell>
-                        <TableCell className="font-mono hover:cursor-copy" onClick={() => { copyOnClick(record.rkey) }}>{record.rkey}</TableCell>
+                        className={selectedRecord?.key === record?.key ? "!bg-white/[15%] " : ""}
+                        onClick={() => setSelectedRecord(record)}
+                    >
+                        <TableCell className="font-mono text-zinc-400">{record.seq}</TableCell>
+                        <TableCell className="font-mono" >{record.repo}</TableCell>
+                        <TableCell className="text-zinc-400" >{record.collection}</TableCell>
+                        <TableCell className="font-mono" >{record.rkey}</TableCell>
                         <TableCell className="text-zinc-400" >{record.action}</TableCell>
-                        <TableCell>
-                            {record.raw && (
-                                <Button className="w-12 h-6 text-xs" onClick={() => {
-                                    setSelectedRecord(record);
-                                }}>View</Button>
-                            )}
-                        </TableCell>
                     </TableRow>
                 ))}
             </TableBody>

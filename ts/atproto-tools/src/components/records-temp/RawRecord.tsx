@@ -28,6 +28,10 @@ function RawRecord({ record }: RawRecordProps) {
             return 'Unknown Collection'
         }
 
+        if (Object.keys(raw).length === 0) {
+            return 'Record is Empty'
+        }
+
         try {
             lex.assertValidRecord(collection, jsonToLex(raw))
         } catch (e) {
@@ -42,15 +46,17 @@ function RawRecord({ record }: RawRecordProps) {
     function getBadgeColor(result: string): "green" | "yellow" | "red" {
         if (result === 'Record is Valid') {
             return 'green'
-        } else if (result === 'Unknown Collection') {
+        } else if (result === 'Unknown Collection' || result === 'Record is Empty') {
             return 'yellow'
-
         } else {
             return 'red'
         }
     }
 
-    if (!record || !record.raw) return null
+    if (!record) return null
+    if (!record.raw) {
+        record.raw = {}
+    }
 
     const lexValidationResult = validateLexicon(record.collection, record.raw)
     const badgeColor = getBadgeColor(lexValidationResult)
