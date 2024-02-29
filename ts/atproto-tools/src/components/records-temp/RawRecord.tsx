@@ -5,6 +5,7 @@ import { Lexicons, ValidationError, jsonToLex } from '@atproto/lexicon';
 import { lexicons } from '../../lexicons.ts';
 import { Badge } from '../catalyst/badge.tsx';
 import Editor, { DiffEditor, useMonaco, loader } from '@monaco-editor/react';
+import { Text } from '../catalyst/text.tsx';
 
 const lex = new Lexicons()
 const knownLexicons: string[] = []
@@ -19,11 +20,9 @@ lexicons.forEach((lexicon) => {
 
 interface RawRecordProps {
     record: JSONRecord
-    isOpen: boolean
-    setIsOpen: (isOpen: boolean) => void
 }
 
-function RawRecord({ record, isOpen, setIsOpen }: RawRecordProps) {
+function RawRecord({ record }: RawRecordProps) {
     function validateLexicon(collection: string, raw: any): string {
         if (!knownLexicons.includes(collection)) {
             return 'Unknown Collection'
@@ -62,26 +61,24 @@ function RawRecord({ record, isOpen, setIsOpen }: RawRecordProps) {
     if (numLines > 25) numLines = 25
 
     return (
-        <Dialog open={isOpen} onClose={setIsOpen} size="3xl">
-            <DialogTitle>Raw Record Viewer</DialogTitle>
-            <DialogDescription>
+        <div className="mt-20">
+            <Text className="mb-2">
                 Raw record content for: <span className="text-sm font-mono">at://{record.repo}/{record.collection}/{record.rkey}</span>
-            </DialogDescription>
-            <DialogBody className="min-w-full">
+            </Text>
+            <div className="min-w-full">
                 <Editor
                     width="100%"
-                    height={`${numLines * 1.5}rem`}
+                    height="80vh"
                     language="json"
                     theme="vs-dark"
                     value={formattedRaw}
                     options={{ readOnly: true, wordWrap: 'on' }}
                 />
-            </DialogBody>
-            <DialogActions className='justify-between'>
+            </div>
+            <div className="mt-2">
                 <Badge color={badgeColor}>{lexValidationResult}</Badge>
-                <Button onClick={() => setIsOpen(false)}>Close</Button>
-            </DialogActions>
-        </Dialog>
+            </div>
+        </div>
     )
 }
 

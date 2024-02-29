@@ -11,7 +11,6 @@ import { Input } from "../catalyst/input";
 
 const Records: FC<{}> = () => {
     const [selectedRecord, setSelectedRecord] = useState<JSONRecord | null>(null);
-    const [isRawRecordOpen, setIsRawRecordOpen] = useState(false);
     const [records, setRecords] = useState<JSONRecord[]>([]);
     const [error, setError] = useState<string | null>(null);
 
@@ -48,7 +47,19 @@ const Records: FC<{}> = () => {
                 if (data.error) {
                     setError(data.error);
                 } else {
-                    setRecords(data.records);
+                    const newRecords = data.records.map((record: JSONRecord) => {
+                        record.key = `${record.seq}_${record.collection}_${record.rkey}`;
+                        return record;
+                    })
+                    let firstRecord = null;
+                    for (const record of newRecords) {
+                        if (record.raw) {
+                            firstRecord = record;
+                            break;
+                        }
+                    }
+                    setRecords(newRecords);
+                    setSelectedRecord(firstRecord);
                 }
             });
     };
@@ -85,11 +96,10 @@ const Records: FC<{}> = () => {
 
 
     return (
-        <div className="mt-6">
-            <div className="mx-auto max-w-7xl px-2 align-middle">
+        <div className="grid grid-cols-2 mx-4 gap-6 h-screen">
+            <div className="mt-6 max-h-full">
                 <h1 className="text-4xl font-bold">View Firehose Records</h1>
-                <div className="mt-8">
-                    <RawRecord record={selectedRecord!} isOpen={isRawRecordOpen} setIsOpen={setIsRawRecordOpen} />
+                <div className="mt-8 max-h-full">
                     {queryInitialized && <SearchForm
                         didQuery={didQuery}
                         collectionQuery={collectionQuery}
@@ -97,17 +107,20 @@ const Records: FC<{}> = () => {
                         seqQuery={seqQuery}
                         setSearchParams={setSearchParams}
                     />}
-                    <RecordsTable records={records} setSelectedRecord={setSelectedRecord} setIsRawRecordOpen={setIsRawRecordOpen} />
+                    <RecordsTable records={records} setSelectedRecord={setSelectedRecord} selectedRecord={selectedRecord} />
                 </div>
+            </div>
+            <div className="mt-10">
+                <RawRecord record={selectedRecord!} />
             </div>
         </div >
     );
 };
 
-function RecordsTable({ records, setSelectedRecord, setIsRawRecordOpen }: {
+function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
     records: JSONRecord[],
+    selectedRecord: JSONRecord | null,
     setSelectedRecord: (record: JSONRecord) => void,
-    setIsRawRecordOpen: (isOpen: boolean) => void
 }) {
     const copyOnClick = async (text: string) => {
         try {
@@ -119,7 +132,11 @@ function RecordsTable({ records, setSelectedRecord, setIsRawRecordOpen }: {
     }
 
     return (
-        <Table striped dense grid className="[--gutter:theme(spacing.6)] sm:[--gutter:theme(spacing.8)]">
+        <Table
+            striped dense grid
+            className="overflow-y-scroll [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
+            style={{ height: "80vh", colorScheme: "dark" }}
+        >
             <TableHead>
                 <TableRow>
                     <TableHeader>Seq</TableHeader>
@@ -132,7 +149,7 @@ function RecordsTable({ records, setSelectedRecord, setIsRawRecordOpen }: {
             </TableHead>
             <TableBody>
                 {records.map((record) => (
-                    <TableRow key={`${record.seq}_${record.collection}_${record.rkey}`}>
+                    <TableRow key={record?.key || ""} className={selectedRecord?.key === record?.key ? "bg-white/[15%] dark:even:bg-white/[15%]" : ""}>
                         <TableCell className="font-mono text-zinc-400 hover:cursor-copy" onClick={() => { copyOnClick(record.seq.toString()) }}>{record.seq}</TableCell>
                         <TableCell className="font-mono hover:cursor-copy" onClick={() => { copyOnClick(record.repo) }}>{record.repo}</TableCell>
                         <TableCell className="text-zinc-400 hover:cursor-copy" onClick={() => { copyOnClick(record.collection) }}>{record.collection}</TableCell>
@@ -142,7 +159,6 @@ function RecordsTable({ records, setSelectedRecord, setIsRawRecordOpen }: {
                             {record.raw && (
                                 <Button className="w-12 h-6 text-xs" onClick={() => {
                                     setSelectedRecord(record);
-                                    setIsRawRecordOpen(true);
                                 }}>View</Button>
                             )}
                         </TableCell>

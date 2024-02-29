@@ -5,6 +5,7 @@ export declare interface JSONRecord {
   rkey: string;
   action: string;
   raw?: { [key: string]: any };
+  key?: string;
 }
 
 export declare interface RecordsResponse {
