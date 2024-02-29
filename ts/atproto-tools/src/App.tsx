@@ -46,7 +46,7 @@ const NavList: React.FC = () => {
 
 const ThemeWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-200 min-h-screen">
+    <div className="flex flex-col bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-200 min-h-dvh">
       {children}
     </div>
   );
