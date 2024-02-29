@@ -66,6 +66,7 @@ const Records: FC<{}> = () => {
 
       return newRecords;
     },
+    enabled: queryInitialized,
   });
 
   // if there is recordQuery.data, and selectedRecord is not in the data, set selectedRecord to the first record
