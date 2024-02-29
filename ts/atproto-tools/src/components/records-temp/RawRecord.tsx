@@ -67,21 +67,20 @@ function RawRecord({ record }: RawRecordProps) {
     if (numLines > 25) numLines = 25
 
     return (
-        <div className="mt-20">
-            <Text className="mb-2">
+        <div className="lg:mt-20 flex flex-col grow">
+            <Text className="mb-2 flex-none">
                 Raw record content for: <span className="text-sm font-mono">at://{record.repo}/{record.collection}/{record.rkey}</span>
             </Text>
-            <div className="min-w-full">
+            <div className="min-w-full grow">
                 <Editor
                     width="100%"
-                    height="80vh"
                     language="json"
                     theme="vs-dark"
                     value={formattedRaw}
                     options={{ readOnly: true, wordWrap: 'on', lineNumbersMinChars: 3 }}
                 />
             </div>
-            <div className="mt-2">
+            <div className="mt-2 flex-none">
                 <Badge color={badgeColor}>{lexValidationResult}</Badge>
             </div>
         </div>

@@ -96,21 +96,25 @@ const Records: FC<{}> = () => {
 
 
     return (
-        <div className="grid grid-cols-2 mx-4 gap-6 h-screen">
-            <div className="mt-6 max-h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 mx-4 lg:gap-6 max-h-dvh">
+            <div className="mt-6">
                 <h1 className="text-4xl font-bold">View Firehose Records</h1>
-                <div className="mt-8 max-h-full">
-                    {queryInitialized && <SearchForm
-                        didQuery={didQuery}
-                        collectionQuery={collectionQuery}
-                        rkeyQuery={rkeyQuery}
-                        seqQuery={seqQuery}
-                        setSearchParams={setSearchParams}
-                    />}
-                    <RecordsTable records={records} setSelectedRecord={setSelectedRecord} selectedRecord={selectedRecord} />
+                <div className="mt-8 flex flex-col" >
+                    <div className="flex-none">
+                        {queryInitialized && <SearchForm
+                            didQuery={didQuery}
+                            collectionQuery={collectionQuery}
+                            rkeyQuery={rkeyQuery}
+                            seqQuery={seqQuery}
+                            setSearchParams={setSearchParams}
+                        />}
+                    </div>
+                    <div className="grow">
+                        <RecordsTable records={records} setSelectedRecord={setSelectedRecord} selectedRecord={selectedRecord} />
+                    </div>
                 </div>
             </div>
-            <div className="mt-10">
+            <div className="lg:mt-10 flex">
                 <RawRecord record={selectedRecord!} />
             </div>
         </div >
@@ -126,7 +130,7 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
         <Table
             striped dense grid
             className="overflow-y-auto focus:outline-none [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
-            style={{ height: "80vh", colorScheme: "dark" }}
+            style={{ colorScheme: "dark" }}
             tabIndex={0}
             onKeyDown={(e) => {
                 if (e.key === "ArrowDown" && selectedRecord) {
@@ -206,9 +210,9 @@ function SearchForm({ didQuery, collectionQuery, rkeyQuery, seqQuery, setSearchP
             e.preventDefault();
             handleSearch();
         }}>
-            <Fieldset className="mb-4">
+            <Fieldset className="mb-6 sm:mb-4">
                 <FieldGroup>
-                    <div className="grid grid-cols-1 gap-8 sm:grid-cols-9 sm:gap-4">
+                    <div className="grid grid-cols-1 gap-1 sm:grid-cols-9 sm:gap-4">
                         <Field className="col-span-1">
                             <Label>Seq</Label>
                             <Input name="seq" value={seqSearch || ""} onChange={(e) => setSeqSearch(e.target.value.trim())} />
