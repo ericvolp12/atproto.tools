@@ -123,7 +123,7 @@ function RecordsTable({ records, selectedRecord, setSelectedRecord }: {
 }) {
     return (
         <Table
-            striped dense grid
+            striped dense grid sticky
             className="mx-0 focus:outline-none [--gutter:theme(spacing.2)] sm:[--gutter:theme(spacing.2)]"
             style={{ colorScheme: "dark" }}
             tabIndex={0}
