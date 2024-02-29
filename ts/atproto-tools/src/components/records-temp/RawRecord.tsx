@@ -51,7 +51,9 @@ function RawRecord({ record }: RawRecordProps) {
         }
     }
 
-    if (!record) return null
+    if (!record) {
+        record = { repo: '', collection: '', rkey: '', seq: 0, action: '', raw: {} }
+    }
     if (!record.raw) {
         record.raw = {}
     }
@@ -67,7 +69,12 @@ function RawRecord({ record }: RawRecordProps) {
     return (
         <div className='flex grow flex-col min-h-0 pt-12 lg:basis-0'>
             <Text className="mb-2">
-                Raw record content for: <span className="text-sm font-mono break-all">at://{record.repo}/{record.collection}/{record.rkey}</span>
+                {record.collection !== "" ? (<>
+                    Raw record content for: <span className="text-sm font-mono break-all">at://{record.repo}/{record.collection}/{record.rkey}</span>
+                </>
+                ) : (
+                    <span className="text-sm font-mono break-all">No record selected</span>
+                )}
             </Text>
 
             <div className='grow h-96 lg:h-auto'>
