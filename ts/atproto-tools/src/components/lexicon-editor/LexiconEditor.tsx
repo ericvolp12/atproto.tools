@@ -37,7 +37,7 @@ const LexiconEditor: FC<{}> = () => {
 
 
   return (
-    <div className="flex min-h-0 min-w-0 grow flex-col gap-6 p-4 pt-6 lg:h-dvh lg:flex-row">
+    <div className="flex min-h-0 min-w-0 grow flex-col gap-4 pb-4 pt-0 px-8 lg:h-dvh lg:flex-row">
       <div
         className="flex min-h-0 grow flex-col gap-2 lg:basis-0 dark:[color-scheme:dark]"
       >
@@ -109,7 +109,7 @@ function LexEditor({ activeLexPair, setActiveLexPair }: LexEditorProps) {
   return (
     <div className="flex min-h-0 grow flex-col pt-12 lg:basis-0">
       <Text className="mb-2 text-center">
-        <span className="text-3xl">
+        <span className="text-3xl dark:text-slate-100">
           Build a Lexicon
         </span>
       </Text>

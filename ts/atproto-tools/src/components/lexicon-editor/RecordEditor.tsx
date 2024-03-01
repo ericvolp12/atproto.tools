@@ -80,7 +80,7 @@ function RecordEditor({ lexID, lexRaw }: RecordEditorProps) {
   return (
     <div className="flex min-h-0 grow flex-col pt-12 lg:basis-0">
       <Text className="mb-2 text-center">
-        <span className="text-3xl">
+        <span className="text-3xl dark:text-slate-100">
           Validate a Record
         </span>
       </Text>

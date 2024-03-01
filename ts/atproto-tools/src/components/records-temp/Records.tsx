@@ -114,7 +114,7 @@ const Records: FC<{}> = () => {
       <div
         className="flex min-h-0 grow flex-col gap-2 lg:basis-0 dark:[color-scheme:dark]"
       >
-        <h1 className="text-4xl font-bold">View Firehose Records</h1>
+        <h1 className="text-4xl font-bold text-center">View Firehose Records</h1>
         {queryInitialized && (
           <SearchForm
             didQuery={didQuery}
