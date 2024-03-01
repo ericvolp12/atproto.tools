@@ -5,7 +5,6 @@ import { lexicons } from "../../lexicons.ts";
 import { JSONRecord } from "../../models/Record";
 import { Badge } from "../catalyst/badge.tsx";
 import { Text } from "../catalyst/text.tsx";
-import { useState } from "react";
 import { useMediaQuery } from "react-responsive";
 
 
