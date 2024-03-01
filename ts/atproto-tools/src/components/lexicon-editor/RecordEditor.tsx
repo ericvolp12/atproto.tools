@@ -1,7 +1,13 @@
-import { jsonStringToLex, jsonToLex, Lexicons, ValidationError } from "@atproto/lexicon";
-import Editor from "@monaco-editor/react";
 import { useEffect, useState } from "react";
+import {
+  jsonStringToLex,
+  jsonToLex,
+  Lexicons,
+  ValidationError,
+} from "@atproto/lexicon";
+import Editor from "@monaco-editor/react";
 import { useMediaQuery } from "react-responsive";
+
 import { lexicons } from "../../lexicons.js";
 import { Badge } from "../catalyst/badge.js";
 import { Text } from "../catalyst/text.js";
@@ -27,7 +33,8 @@ function RecordEditor({ lexID, lexRaw }: RecordEditorProps) {
       "uri": "at://did:plc:umdwh4r456zres7qrdbfpibd/app.bsky.feed.post/3kmlyenrxdh27"
     }
   }`);
-  const [lexValidationResult, setLexValidationResult] = useState<string>("Record is Empty");
+  const [lexValidationResult, setLexValidationResult] =
+    useState<string>("Record is Empty");
 
   const darkMode = useMediaQuery({
     query: "(prefers-color-scheme: dark)",
@@ -36,7 +43,7 @@ function RecordEditor({ lexID, lexRaw }: RecordEditorProps) {
   try {
     // Remove the lexicon if it's already registered
     lex.remove(lexID);
-  } catch (e) { }
+  } catch (e) {}
 
   // Register our custom lexicon
   lex.add(jsonStringToLex(lexRaw));
@@ -80,9 +87,7 @@ function RecordEditor({ lexID, lexRaw }: RecordEditorProps) {
   return (
     <div className="flex min-h-0 grow flex-col pt-12 lg:basis-0">
       <Text className="mb-4 text-center">
-        <span className="text-3xl dark:text-slate-100">
-          Validate a Record
-        </span>
+        <span className="text-3xl dark:text-slate-100">Validate a Record</span>
       </Text>
 
       <div className="h-96 grow lg:h-auto">
@@ -97,12 +102,16 @@ function RecordEditor({ lexID, lexRaw }: RecordEditorProps) {
             wordWrap: "on",
             lineNumbersMinChars: 3,
           }}
-          onChange={(value) => { if (value) setRecord(value) }}
+          onChange={(value) => {
+            if (value) setRecord(value);
+          }}
         />
       </div>
 
       <div className="mt-2">
-        <Badge color={getBadgeColor(lexValidationResult)}>{lexValidationResult}</Badge>
+        <Badge color={getBadgeColor(lexValidationResult)}>
+          {lexValidationResult}
+        </Badge>
       </div>
     </div>
   );

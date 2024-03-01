@@ -1,8 +1,9 @@
-import { JSONRecord } from "../../models/Record";
-import { Lexicons, ValidationError, jsonToLex } from "@atproto/lexicon";
-import { lexicons } from "../../lexicons.ts";
-import { Badge } from "../catalyst/badge.tsx";
+import { jsonToLex, Lexicons, ValidationError } from "@atproto/lexicon";
 import Editor from "@monaco-editor/react";
+
+import { lexicons } from "../../lexicons.ts";
+import { JSONRecord } from "../../models/Record";
+import { Badge } from "../catalyst/badge.tsx";
 import { Text } from "../catalyst/text.tsx";
 
 const lex = new Lexicons();
@@ -76,17 +77,17 @@ function RawRecord({ record }: RawRecordProps) {
   if (numLines > 25) numLines = 25;
 
   return (
-    <div className="flex grow flex-col min-w-0 min-h-0 pt-12 lg:basis-0">
+    <div className="flex min-h-0 min-w-0 grow flex-col pt-12 lg:basis-0">
       <Text className="mb-2">
         {record.collection !== "" ? (
           <>
             Raw record content for:{" "}
-            <span className="text-sm font-mono break-all">
+            <span className="break-all font-mono text-sm">
               at://{record.repo}/{record.collection}/{record.rkey}
             </span>
           </>
         ) : (
-          <span className="text-sm font-mono break-all">
+          <span className="break-all font-mono text-sm">
             No record selected
           </span>
         )}
@@ -96,7 +97,7 @@ function RawRecord({ record }: RawRecordProps) {
         <Badge color={badgeColor}>{lexValidationResult}</Badge>
       </div>
 
-      <div className="grow h-96 lg:h-auto">
+      <div className="h-96 grow lg:h-auto">
         <Editor
           width="100%"
           height="100%"
