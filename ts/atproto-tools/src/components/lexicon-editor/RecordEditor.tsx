@@ -19,7 +19,14 @@ lexicons.forEach((lexicon) => {
 });
 
 function RecordEditor({ lexID, lexRaw }: RecordEditorProps) {
-  const [record, setRecord] = useState<string>("{}");
+  const [record, setRecord] = useState<string>(`{
+    "$type": "app.bsky.feed.like",
+    "createdAt": "2024-03-01T05:15:56.866Z",
+    "subject": {
+      "cid": "bafyreifjhu45jmyvpvrq5mtqhtjlxppguk2jmlz5q44kssv57hvqva4m7i",
+      "uri": "at://did:plc:umdwh4r456zres7qrdbfpibd/app.bsky.feed.post/3kmlyenrxdh27"
+    }
+  }`);
   const [lexValidationResult, setLexValidationResult] = useState<string>("Record is Empty");
 
   const darkMode = useMediaQuery({
