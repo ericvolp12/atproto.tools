@@ -5,6 +5,9 @@ import { lexicons } from "../../lexicons.ts";
 import { JSONRecord } from "../../models/Record";
 import { Badge } from "../catalyst/badge.tsx";
 import { Text } from "../catalyst/text.tsx";
+import { useState } from "react";
+import { useMediaQuery } from "react-responsive";
+
 
 const lex = new Lexicons();
 const knownLexicons: string[] = [];
@@ -21,6 +24,10 @@ interface RawRecordProps {
 }
 
 function RawRecord({ record }: RawRecordProps) {
+  const darkMode = useMediaQuery({
+    query: "(prefers-color-scheme: dark)",
+  });
+
   function validateLexicon(collection: string, raw: any): string {
     if (!knownLexicons.includes(collection)) {
       return "Unknown Collection";
@@ -98,7 +105,7 @@ function RawRecord({ record }: RawRecordProps) {
           width="100%"
           height="100%"
           language="json"
-          theme="vs-dark"
+          theme={darkMode ? "vs-dark" : "vs-light"}
           value={formattedRaw}
           options={{
             readOnly: true,
