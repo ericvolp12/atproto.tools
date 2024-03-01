@@ -37,7 +37,7 @@ const NavList: React.FC = () => {
             records
           </Link>
           {" | "}
-          <Link to="/lexicon_editor" className={active(["/lexicon_editor"])}>
+          <Link to="/lexicons" className={active(["/lexicons"])}>
             lexicons
           </Link>
           {" | "}
@@ -91,7 +91,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/lexicon_editor",
+    path: "/lexicons",
     element: (
       <ThemeWrapper>
         <NavList />
