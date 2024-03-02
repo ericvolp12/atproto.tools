@@ -89,6 +89,9 @@ func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 
 	bq.recordBuf <- record
 
+	recordsProcessed.WithLabelValues(bq.tablePrefix).Inc()
+	queueDepth.WithLabelValues(bq.tablePrefix).Inc()
+
 	return nil
 }
 
@@ -109,6 +112,7 @@ func (bq *BQ) insertRecords(ctx context.Context) error {
 		select {
 		case record := <-bq.recordBuf:
 			records = append(records, record)
+			queueDepth.WithLabelValues(bq.tablePrefix).Dec()
 		default:
 			break
 		}
@@ -118,6 +122,13 @@ func (bq *BQ) insertRecords(ctx context.Context) error {
 	if len(records) == 0 {
 		return nil
 	}
+
+	start := time.Now()
+	defer func() {
+		elapsed := time.Since(start)
+		batchSubmissionDuration.WithLabelValues(bq.tablePrefix).Observe(float64(elapsed.Milliseconds()))
+		batchSizeHist.WithLabelValues(bq.tablePrefix).Observe(float64(batchSize))
+	}()
 
 	// Insert the records
 	if err := bq.inserter.Put(ctx, records); err != nil {
