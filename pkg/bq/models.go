@@ -20,7 +20,7 @@ type Record struct {
 	Collection  string            `bigquery:"collection"`
 	RKey        string            `bigquery:"r_key"`
 	Action      string            `bigquery:"action"`
-	Raw         bigquery.NullJSON `bigquery:"raw,nullable"`
+	Raw         bigquery.NullJSON `bigquery:"raw"`
 
 	Error string `bigquery:"error"`
 }
