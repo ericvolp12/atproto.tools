@@ -66,7 +66,7 @@ func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 	today := time.Now().Format("20060102")
 
 	bq.tableLk.Lock()
-	if bq.tableDate != today {
+	if bq.tableDate != today || bq.inserter == nil {
 		bq.tableDate = today
 		table := bq.dataset.Table(fmt.Sprintf("%s_%s", bq.tablePrefix, today))
 		err := table.Create(ctx, &bigquery.TableMetadata{Schema: bq.recordSchema})
