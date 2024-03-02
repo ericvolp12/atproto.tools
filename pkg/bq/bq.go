@@ -71,6 +71,7 @@ func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 		table := bq.dataset.Table(fmt.Sprintf("%s_%s", bq.tablePrefix, today))
 		err := table.Create(ctx, &bigquery.TableMetadata{Schema: bq.recordSchema})
 		if err != nil {
+			bq.tableLk.Unlock()
 			return fmt.Errorf("failed to create table: %w", err)
 		}
 		bq.inserter = table.Inserter()
