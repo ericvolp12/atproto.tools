@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"sync"
 	"time"
 
 	"cloud.google.com/go/bigquery"
@@ -20,9 +19,10 @@ type BQ struct {
 
 	tablePrefix string
 
-	tableLk   sync.RWMutex
 	tableDate string
 	inserter  *bigquery.Inserter
+
+	recordBuf chan *Record
 }
 
 var tracer = otel.Tracer("bq")
@@ -50,22 +50,34 @@ func NewBQ(
 		return nil, fmt.Errorf("failed to get dataset metadata, make sure to create it if it doesn't exist: %w", err)
 	}
 
-	return &BQ{
+	bq := &BQ{
 		recordSchema: recordSchema,
 		client:       bqClient,
 		dataset:      bqDataset,
 		logger:       logger,
 		tablePrefix:  tablePrefix,
-	}, nil
+		recordBuf:    make(chan *Record, 100_000),
+	}
+
+	// Start a routine to batch insert records every 5 seconds
+	go func() {
+		t := time.NewTicker(5 * time.Second)
+		for {
+			select {
+			case <-t.C:
+				if err := bq.insertRecords(ctx); err != nil {
+					logger.Error("failed to insert records", "error", err)
+				}
+			}
+		}
+	}()
+
+	return bq, nil
 }
 
 func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 	ctx, span := tracer.Start(ctx, "InsertRecord")
 	defer span.End()
-
-	if err := bq.CreateTableIfNotExists(ctx); err != nil {
-		return fmt.Errorf("failed to create table: %w", err)
-	}
 
 	span.SetAttributes(
 		attribute.String("repo", record.Repo),
@@ -75,24 +87,52 @@ func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 		attribute.Int64("firehose_seq", record.FirehoseSeq),
 	)
 
-	bq.tableLk.RLock()
-	defer bq.tableLk.RUnlock()
-	return bq.inserter.Put(ctx, record)
+	bq.recordBuf <- record
+
+	return nil
+}
+
+func (bq *BQ) insertRecords(ctx context.Context) error {
+	ctx, span := tracer.Start(ctx, "insertRecords")
+	defer span.End()
+
+	// Create table if it doesn't exist
+	if err := bq.CreateTableIfNotExists(ctx); err != nil {
+		return fmt.Errorf("failed to create table: %w", err)
+	}
+
+	// Grab up to 10_000 records from the buffer
+	batchSize := 10_000
+
+	records := make([]*Record, 0, batchSize)
+	for i := 0; i < batchSize; i++ {
+		select {
+		case record := <-bq.recordBuf:
+			records = append(records, record)
+		default:
+			break
+		}
+	}
+
+	// If there are no records, return early
+	if len(records) == 0 {
+		return nil
+	}
+
+	// Insert the records
+	if err := bq.inserter.Put(ctx, records); err != nil {
+		return fmt.Errorf("failed to insert records: %w", err)
+	}
+
+	return nil
 }
 
 func (bq *BQ) CreateTableIfNotExists(ctx context.Context) error {
 	today := time.Now().Format("20060102")
 
-	bq.tableLk.RLock()
-
 	if bq.tableDate == today && bq.inserter != nil {
-		bq.tableLk.RUnlock()
 		return nil
 	}
-	bq.tableLk.RUnlock()
-
-	bq.tableLk.Lock()
-	defer bq.tableLk.Unlock()
 
 	table := bq.dataset.Table(fmt.Sprintf("%s_%s", bq.tablePrefix, today))
 	_, err := table.Metadata(ctx)
@@ -102,6 +142,8 @@ func (bq *BQ) CreateTableIfNotExists(ctx context.Context) error {
 			return fmt.Errorf("failed to create table: %w", err)
 		}
 	}
+
+	bq.inserter = table.Inserter()
 
 	return nil
 }
