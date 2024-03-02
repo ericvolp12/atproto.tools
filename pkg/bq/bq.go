@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"sync"
 	"time"
 
 	"cloud.google.com/go/bigquery"
@@ -19,8 +20,9 @@ type BQ struct {
 
 	tablePrefix string
 
-	table     *bigquery.Table
+	tableLk   sync.RWMutex
 	tableDate string
+	inserter  *bigquery.Inserter
 }
 
 var tracer = otel.Tracer("bq")
@@ -62,14 +64,18 @@ func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 	defer span.End()
 
 	today := time.Now().Format("20060102")
+
+	bq.tableLk.Lock()
 	if bq.tableDate != today {
 		bq.tableDate = today
-		bq.table = bq.dataset.Table(fmt.Sprintf("%s_%s", bq.tablePrefix, today))
-		err := bq.table.Create(ctx, &bigquery.TableMetadata{Schema: bq.recordSchema})
+		table := bq.dataset.Table(fmt.Sprintf("%s_%s", bq.tablePrefix, today))
+		err := table.Create(ctx, &bigquery.TableMetadata{Schema: bq.recordSchema})
 		if err != nil {
 			return fmt.Errorf("failed to create table: %w", err)
 		}
+		bq.inserter = table.Inserter()
 	}
+	bq.tableLk.Unlock()
 
 	span.SetAttributes(
 		attribute.String("repo", record.Repo),
@@ -79,9 +85,9 @@ func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 		attribute.Int64("firehose_seq", record.FirehoseSeq),
 	)
 
-	u := bq.table.Inserter()
-
-	return u.Put(ctx, record)
+	bq.tableLk.RLock()
+	defer bq.tableLk.RUnlock()
+	return bq.inserter.Put(ctx, record)
 }
 
 func (bq *BQ) Close() error {
