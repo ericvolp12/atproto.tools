@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"cloud.google.com/go/bigquery"
 	"go.opentelemetry.io/otel"
@@ -17,6 +18,9 @@ type BQ struct {
 	dataset      *bigquery.Dataset
 
 	tablePrefix string
+
+	table     *bigquery.Table
+	tableDate string
 }
 
 var tracer = otel.Tracer("bq")
@@ -57,6 +61,16 @@ func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 	ctx, span := tracer.Start(ctx, "InsertRecord")
 	defer span.End()
 
+	today := time.Now().Format("20060102")
+	if bq.tableDate != today {
+		bq.tableDate = today
+		bq.table = bq.dataset.Table(fmt.Sprintf("%s_%s", bq.tablePrefix, today))
+		err := bq.table.Create(ctx, &bigquery.TableMetadata{Schema: bq.recordSchema})
+		if err != nil {
+			return fmt.Errorf("failed to create table: %w", err)
+		}
+	}
+
 	span.SetAttributes(
 		attribute.String("repo", record.Repo),
 		attribute.String("collection", record.Collection),
@@ -65,11 +79,7 @@ func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 		attribute.Int64("firehose_seq", record.FirehoseSeq),
 	)
 
-	// Date-based table partitioning
-	tableName := fmt.Sprintf("%s_%s", bq.tablePrefix, record.CreatedAt.Format("20060102"))
-	table := bq.dataset.Table(tableName)
-
-	u := table.Inserter()
+	u := bq.table.Inserter()
 
 	return u.Put(ctx, record)
 }

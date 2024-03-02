@@ -14,9 +14,11 @@ services:
       - LG_SQLITE_PATH=/data/looking-glass.db
       - LG_MIGRATE_DB=true
       - LG_EVT_RECORD_TTL=48h
+      - GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json
     env_file:
       - .lg.env
     ports:
       - "6962:8080"
     volumes:
       - ./data/lg-consumer:/data
+      - ~/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro
