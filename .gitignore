@@ -21,3 +21,5 @@
 go.work
 
 data/*
+
+*.env
