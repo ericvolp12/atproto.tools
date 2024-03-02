@@ -63,22 +63,9 @@ func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 	ctx, span := tracer.Start(ctx, "InsertRecord")
 	defer span.End()
 
-	today := time.Now().Format("20060102")
-
-	bq.tableLk.Lock()
-	if bq.tableDate != today || bq.inserter == nil {
-		bq.tableDate = today
-		table := bq.dataset.Table(fmt.Sprintf("%s_%s", bq.tablePrefix, today))
-		// Check if table exists, if not create it
-		if _, err := table.Metadata(ctx); err != nil {
-			if err := table.Create(ctx, &bigquery.TableMetadata{Schema: bq.recordSchema}); err != nil {
-				bq.tableLk.Unlock()
-				return fmt.Errorf("failed to create table: %w", err)
-			}
-		}
-		bq.inserter = table.Inserter()
+	if err := bq.CreateTableIfNotExists(ctx); err != nil {
+		return fmt.Errorf("failed to create table: %w", err)
 	}
-	bq.tableLk.Unlock()
 
 	span.SetAttributes(
 		attribute.String("repo", record.Repo),
@@ -91,6 +78,32 @@ func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 	bq.tableLk.RLock()
 	defer bq.tableLk.RUnlock()
 	return bq.inserter.Put(ctx, record)
+}
+
+func (bq *BQ) CreateTableIfNotExists(ctx context.Context) error {
+	today := time.Now().Format("20060102")
+
+	bq.tableLk.RLock()
+
+	if bq.tableDate == today && bq.inserter != nil {
+		bq.tableLk.RUnlock()
+		return nil
+	}
+	bq.tableLk.RUnlock()
+
+	bq.tableLk.Lock()
+	defer bq.tableLk.Unlock()
+
+	table := bq.dataset.Table(fmt.Sprintf("%s_%s", bq.tablePrefix, today))
+	_, err := table.Metadata(ctx)
+	if err != nil {
+		bq.logger.Info("table does not exist, creating", "table", table.FullyQualifiedName())
+		if err := table.Create(ctx, &bigquery.TableMetadata{Schema: bq.recordSchema}); err != nil {
+			return fmt.Errorf("failed to create table: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func (bq *BQ) Close() error {
