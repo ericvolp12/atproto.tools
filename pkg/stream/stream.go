@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"cloud.google.com/go/bigquery"
 	"github.com/araddon/dateparse"
 	"github.com/bluesky-social/indigo/api/atproto"
 	"github.com/bluesky-social/indigo/atproto/data"
@@ -419,7 +420,7 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 					Collection:  recURI.Collection().String(),
 					RKey:        recURI.RecordKey().String(),
 					Action:      op.Action,
-					Raw:         recJSON,
+					Raw:         bigquery.NullJSON{Valid: true, JSONVal: string(recJSON)},
 				}
 
 				if err := s.bq.InsertRecord(ctx, bqRecord); err != nil {

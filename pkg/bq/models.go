@@ -3,6 +3,7 @@ package bq
 import (
 	"time"
 
+	"cloud.google.com/go/bigquery"
 	"gorm.io/gorm"
 )
 
@@ -14,12 +15,12 @@ type Cursor struct {
 type Record struct {
 	CreatedAt time.Time `bigquery:"created_at"`
 
-	FirehoseSeq int64  `bigquery:"firehose_seq"`
-	Repo        string `bigquery:"repo"`
-	Collection  string `bigquery:"collection"`
-	RKey        string `bigquery:"r_key"`
-	Action      string `bigquery:"action"`
-	Raw         []byte `bigquery:"raw,nullable"`
+	FirehoseSeq int64             `bigquery:"firehose_seq"`
+	Repo        string            `bigquery:"repo"`
+	Collection  string            `bigquery:"collection"`
+	RKey        string            `bigquery:"r_key"`
+	Action      string            `bigquery:"action"`
+	Raw         bigquery.NullJSON `bigquery:"raw,nullable"`
 
 	Error string `bigquery:"error"`
 }
