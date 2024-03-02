@@ -21,6 +21,7 @@ import (
 	"github.com/bluesky-social/indigo/events"
 	"github.com/bluesky-social/indigo/events/schedulers/parallel"
 	"github.com/bluesky-social/indigo/repo"
+	"github.com/ericvolp12/atproto.tools/pkg/bq"
 	"github.com/gorilla/websocket"
 	"github.com/ipfs/go-cid"
 	"go.opentelemetry.io/otel"
@@ -48,6 +49,8 @@ type Stream struct {
 	ttl    time.Duration
 
 	dir *identity.CacheDirectory
+
+	bq *bq.BQ
 }
 
 var tracer = otel.Tracer("stream")
@@ -58,6 +61,7 @@ func NewStream(
 	sqlitePath string,
 	migrate bool,
 	ttl time.Duration,
+	bq *bq.BQ,
 ) (*Stream, error) {
 	gormLogger := slogGorm.New()
 
@@ -142,6 +146,7 @@ func NewStream(
 		reader:       reader,
 		ttl:          ttl,
 		dir:          &dir,
+		bq:           bq,
 	}, nil
 }
 
@@ -404,7 +409,22 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 			if err := s.writer.Create(dbRecord).Error; err != nil {
 				logger.Error("failed to create db record", "err", err)
 				e.Error += fmt.Sprintf("failed to create db record (path: %q): %v", op.Path, err)
-				continue
+			}
+
+			if s.bq != nil {
+				bqRecord := &bq.Record{
+					CreatedAt:   time.Now(),
+					FirehoseSeq: evt.Seq,
+					Repo:        recURI.Authority().String(),
+					Collection:  recURI.Collection().String(),
+					RKey:        recURI.RecordKey().String(),
+					Action:      op.Action,
+					Raw:         recJSON,
+				}
+
+				if err := s.bq.InsertRecord(ctx, bqRecord); err != nil {
+					logger.Error("failed to insert record into BQ", "err", err)
+				}
 			}
 		case "delete":
 			recRawURI := fmt.Sprintf("at://%s/%s", evt.Repo, op.Path)
@@ -426,7 +446,21 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 			if err := s.writer.Create(dbRecord).Error; err != nil {
 				logger.Error("failed to create db record", "err", err)
 				e.Error += fmt.Sprintf("failed to create db record (path: %q): %v", op.Path, err)
-				continue
+			}
+
+			if s.bq != nil {
+				bqRecord := &bq.Record{
+					CreatedAt:   time.Now(),
+					FirehoseSeq: evt.Seq,
+					Repo:        recURI.Authority().String(),
+					Collection:  recURI.Collection().String(),
+					RKey:        recURI.RecordKey().String(),
+					Action:      op.Action,
+				}
+
+				if err := s.bq.InsertRecord(ctx, bqRecord); err != nil {
+					logger.Error("failed to insert record into BQ", "err", err)
+				}
 			}
 		default:
 			logger.Warn("unknown action", "action", op.Action)

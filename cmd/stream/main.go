@@ -13,6 +13,7 @@ import (
 
 	_ "net/http/pprof"
 
+	"github.com/ericvolp12/atproto.tools/pkg/bq"
 	"github.com/ericvolp12/atproto.tools/pkg/stream"
 	"github.com/ericvolp12/bsky-experiments/pkg/tracing"
 	"github.com/labstack/echo/v4"
@@ -69,6 +70,22 @@ func main() {
 			Value:   72 * time.Hour,
 			EnvVars: []string{"LG_EVT_RECORD_TTL"},
 		},
+		&cli.StringFlag{
+			Name:    "bigquery-project-id",
+			Usage:   "Google Cloud project ID for BigQuery",
+			EnvVars: []string{"LG_BIGQUERY_PROJECT_ID"},
+		},
+		&cli.StringFlag{
+			Name:    "bigquery-dataset",
+			Usage:   "BigQuery dataset name",
+			EnvVars: []string{"LG_BIGQUERY_DATASET"},
+		},
+		&cli.StringFlag{
+			Name:    "bigquery-table-prefix",
+			Usage:   "BigQuery table name prefix",
+			EnvVars: []string{"LG_BIGQUERY_TABLE_PREFIX"},
+			Value:   "records",
+		},
 	}
 
 	app.Action = LookingGlass
@@ -116,12 +133,36 @@ func LookingGlass(cctx *cli.Context) error {
 		}()
 	}
 
+	var bqInstance *bq.BQ
+	var err error
+
+	if cctx.String("bigquery-project-id") != "" {
+		logger.Info("bigquery project id set, starting bigquery client")
+		bqInstance, err = bq.NewBQ(
+			ctx,
+			cctx.String("bigquery-project-id"),
+			cctx.String("bigquery-dataset"),
+			cctx.String("bigquery-table-prefix"),
+			logger,
+		)
+		if err != nil {
+			logger.Error("failed to create bigquery client", "error", err)
+			return err
+		}
+		defer func() {
+			if err := bqInstance.Close(); err != nil {
+				logger.Error("failed to close bigquery client", "error", err)
+			}
+		}()
+	}
+
 	s, err := stream.NewStream(
 		logger,
 		cctx.String("ws-url"),
 		cctx.String("sqlite-path"),
 		cctx.Bool("migrate-db"),
 		cctx.Duration("evt-record-ttl"),
+		bqInstance,
 	)
 	if err != nil {
 		logger.Error("failed to create stream", "error", err)
