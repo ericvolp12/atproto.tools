@@ -69,10 +69,12 @@ func (bq *BQ) InsertRecord(ctx context.Context, record *Record) error {
 	if bq.tableDate != today || bq.inserter == nil {
 		bq.tableDate = today
 		table := bq.dataset.Table(fmt.Sprintf("%s_%s", bq.tablePrefix, today))
-		err := table.Create(ctx, &bigquery.TableMetadata{Schema: bq.recordSchema})
-		if err != nil {
-			bq.tableLk.Unlock()
-			return fmt.Errorf("failed to create table: %w", err)
+		// Check if table exists, if not create it
+		if _, err := table.Metadata(ctx); err != nil {
+			if err := table.Create(ctx, &bigquery.TableMetadata{Schema: bq.recordSchema}); err != nil {
+				bq.tableLk.Unlock()
+				return fmt.Errorf("failed to create table: %w", err)
+			}
 		}
 		bq.inserter = table.Inserter()
 	}
