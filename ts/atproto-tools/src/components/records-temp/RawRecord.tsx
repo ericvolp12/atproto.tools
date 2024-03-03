@@ -1,12 +1,11 @@
 import { jsonToLex, Lexicons, ValidationError } from "@atproto/lexicon";
 import Editor from "@monaco-editor/react";
+import { useMediaQuery } from "react-responsive";
 
 import { lexicons } from "../../lexicons.ts";
 import { JSONRecord } from "../../models/Record";
 import { Badge } from "../catalyst/badge.tsx";
 import { Text } from "../catalyst/text.tsx";
-import { useMediaQuery } from "react-responsive";
-
 
 const lex = new Lexicons();
 const knownLexicons: string[] = [];
@@ -83,7 +82,7 @@ function RawRecord({ record }: RawRecordProps) {
   if (numLines > 25) numLines = 25;
 
   return (
-    <div className="flex min-h-0 grow flex-col pt-12 lg:basis-0">
+    <div className="flex min-h-0 min-w-0 grow flex-col pt-12 lg:basis-0">
       <Text className="mb-2">
         {record.collection !== "" ? (
           <>
