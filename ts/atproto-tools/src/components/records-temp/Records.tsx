@@ -113,11 +113,10 @@ const Records: FC = () => {
 
   return (
     <div className="flex min-h-0 min-w-0 grow flex-col gap-6 p-4 pt-6 lg:h-dvh lg:flex-row">
-      <div
-        className="flex min-h-0 grow flex-col gap-2 lg:basis-0"
-        style={{ colorScheme: "dark" }}
-      >
-        <h1 className="text-4xl font-bold">View Firehose Records</h1>
+      <div className="flex min-h-0 grow flex-col gap-2 lg:basis-0 dark:[color-scheme:dark]">
+        <h1 className="text-center text-4xl font-bold">
+          View Firehose Records
+        </h1>
         {queryInitialized && (
           <SearchForm
             didQuery={didQuery}
@@ -211,8 +210,9 @@ function RecordsTable({
             key={record?.key || ""}
             id={record?.key || ""}
             className={
-              (selectedRecord?.key === record?.key ? "!bg-white/[15%] " : "") +
-              " scroll-m-36"
+              (selectedRecord?.key === record?.key
+                ? "!bg-zinc-950/[15%] dark:!bg-white/[15%] "
+                : "") + " scroll-m-36"
             }
             onClick={() => setSelectedRecord(record)}
           >
