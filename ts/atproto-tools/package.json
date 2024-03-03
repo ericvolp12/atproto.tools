@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@atproto/lexicon": "^0.3.1",
+    "@atproto/syntax": "^0.2.0",
     "@headlessui/react": "2.0.0-alpha.4",
     "@heroicons/react": "^2.1.1",
     "@monaco-editor/react": "^4.6.0",
@@ -21,7 +22,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-responsive": "^9.0.2",
-    "react-router-dom": "^6.22.1"
+    "react-router-dom": "^6.22.1",
+    "zod": "^3.22.4",
+    "zod-to-json-schema": "^3.22.4"
   },
   "devDependencies": {
     "@atproto/lex-cli": "^0.3.0",

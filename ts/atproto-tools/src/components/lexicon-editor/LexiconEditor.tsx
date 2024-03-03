@@ -1,7 +1,27 @@
 import { FC, useEffect, useState } from "react";
-import { jsonStringToLex, Lexicons } from "@atproto/lexicon";
+import {
+  jsonStringToLex,
+  lexArray,
+  lexBlob,
+  lexBoolean,
+  lexBytes,
+  lexCidLink,
+  Lexicons,
+  lexInteger,
+  lexObject,
+  lexRecord,
+  lexString,
+  lexToken,
+  lexUnknown,
+  lexXrpcProcedure,
+  lexXrpcQuery,
+  lexXrpcSubscription,
+} from "@atproto/lexicon";
+import { NSID } from "@atproto/syntax";
 import { Editor } from "@monaco-editor/react";
 import { useMediaQuery } from "react-responsive";
+import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 import { lexicons } from "../../lexicons.ts";
 import { Badge } from "../catalyst/badge.tsx";
@@ -26,7 +46,7 @@ interface LexPair {
   lexRaw: string;
 }
 
-const LexiconEditor: FC<{}> = () => {
+const LexiconEditor: FC = () => {
   const [activeLexPair, setActiveLexPair] = useState<LexPair>({
     lexID: "app.bsky.feed.like",
     lexRaw: JSON.stringify(initialLexicon, null, 2),
@@ -115,6 +135,7 @@ function LexEditor({ activeLexPair, setActiveLexPair }: LexEditorProps) {
           language="json"
           theme={darkMode ? "vs-dark" : "vs-light"}
           value={pendingLex}
+          path="lexicon.json"
           options={{
             readOnly: false,
             wordWrap: "on",
@@ -125,6 +146,18 @@ function LexEditor({ activeLexPair, setActiveLexPair }: LexEditorProps) {
               setPendingLex(value);
             }
           }}
+          beforeMount={(monaco) => {
+            monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+              validate: true,
+              schemas: [
+                {
+                  uri: "not_a_real_uri://lexicon-schema",
+                  fileMatch: ["lexicon.json"],
+                  schema: getLexiconJSONSchema(),
+                },
+              ],
+            });
+          }}
         />
       </div>
       <div className="mt-2">
@@ -133,5 +166,37 @@ function LexEditor({ activeLexPair, setActiveLexPair }: LexEditorProps) {
         </Badge>
       </div>
     </div>
+  );
+}
+
+function getLexiconJSONSchema() {
+  return zodToJsonSchema(
+    // copied from lexiconDoc, but defs changed to union
+    z.object({
+      lexicon: z.literal(1),
+      id: z.string().refine((v: string) => NSID.isValid(v), {
+        message: "Must be a valid NSID",
+      }),
+      revision: z.number().optional(),
+      description: z.string().optional(),
+      defs: z.record(
+        z.union([
+          lexRecord,
+          lexXrpcQuery,
+          lexXrpcProcedure,
+          lexXrpcSubscription,
+          lexBlob,
+          lexArray,
+          lexToken,
+          lexObject,
+          lexBoolean,
+          lexInteger,
+          lexString,
+          lexBytes,
+          lexCidLink,
+          lexUnknown,
+        ]),
+      ),
+    }),
   );
 }
