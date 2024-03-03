@@ -7,9 +7,9 @@ import {
   useLocation,
 } from "react-router-dom";
 
+import LexiconEditor from "./components/lexicon-editor/LexiconEditor";
 import Records from "./components/records-temp/Records";
 import Welcome from "./components/welcome/Welcome";
-import LexiconEditor from "./components/lexicon-editor/LexiconEditor";
 
 const NavList: React.FC = () => {
   let location = useLocation();
@@ -98,7 +98,7 @@ const router = createBrowserRouter([
         <LexiconEditor />
       </ThemeWrapper>
     ),
-  }
+  },
 ]);
 
 function App() {

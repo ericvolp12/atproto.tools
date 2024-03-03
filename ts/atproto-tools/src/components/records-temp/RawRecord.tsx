@@ -1,12 +1,11 @@
 import { jsonToLex, Lexicons, ValidationError } from "@atproto/lexicon";
 import Editor from "@monaco-editor/react";
+import { useMediaQuery } from "react-responsive";
 
 import { lexicons } from "../../lexicons.ts";
 import { JSONRecord } from "../../models/Record";
 import { Badge } from "../catalyst/badge.tsx";
 import { Text } from "../catalyst/text.tsx";
-import { useMediaQuery } from "react-responsive";
-
 
 const lex = new Lexicons();
 const knownLexicons: string[] = [];
