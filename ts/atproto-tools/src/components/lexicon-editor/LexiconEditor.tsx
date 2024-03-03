@@ -151,7 +151,7 @@ function LexEditor({ activeLexPair, setActiveLexPair }: LexEditorProps) {
               validate: true,
               schemas: [
                 {
-                  uri: "http://atproto.tools/lexicon-schema.json",
+                  uri: "not_a_real_uri://lexicon-schema",
                   fileMatch: ["lexicon.json"],
                   schema: getLexiconJSONSchema(),
                 },
