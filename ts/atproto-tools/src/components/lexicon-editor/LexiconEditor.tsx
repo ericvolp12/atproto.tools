@@ -173,7 +173,6 @@ function getLexiconJSONSchema() {
   return zodToJsonSchema(
     // copied from lexiconDoc, but defs changed to union
     z.object({
-      $schema: z.string().optional(),
       lexicon: z.literal(1),
       id: z.string().refine((v: string) => NSID.isValid(v), {
         message: "Must be a valid NSID",
