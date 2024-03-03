@@ -19,12 +19,9 @@ import {
 } from "@atproto/lexicon";
 import { NSID } from "@atproto/syntax";
 import { Editor } from "@monaco-editor/react";
-import { jsonStringToLex, Lexicons } from "@atproto/lexicon";
-import { Editor } from "@monaco-editor/react";
 import { useMediaQuery } from "react-responsive";
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
-
 
 import { lexicons } from "../../lexicons.ts";
 import { Badge } from "../catalyst/badge.tsx";
