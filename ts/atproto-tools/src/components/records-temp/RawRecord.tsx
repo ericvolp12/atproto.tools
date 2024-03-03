@@ -82,7 +82,7 @@ function RawRecord({ record }: RawRecordProps) {
   if (numLines > 25) numLines = 25;
 
   return (
-    <div className="flex min-h-0 grow flex-col pt-12 lg:basis-0">
+    <div className="flex min-h-0 min-w-0 grow flex-col pt-12 lg:basis-0">
       <Text className="mb-2">
         {record.collection !== "" ? (
           <>

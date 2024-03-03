@@ -20,6 +20,7 @@ const Records: FC<{}> = () => {
   const [selectedRecord, setSelectedRecord] = useState<JSONRecord | null>(null);
   const [records, setRecords] = useState<JSONRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const [didQuery, setDIDQuery] = useState<string | null>(null);
   const [collectionQuery, setCollectionQuery] = useState<string | null>(null);
@@ -68,6 +69,9 @@ const Records: FC<{}> = () => {
           setRecords(newRecords);
           setSelectedRecord(firstRecord);
         }
+      })
+      .finally(() => {
+        setHasInitialized(true);
       });
   };
 
@@ -125,7 +129,7 @@ const Records: FC<{}> = () => {
           />
         )}
 
-        <div className="h-96 min-h-0 grow overflow-y-auto lg:h-auto">
+        <div className="h-96 min-h-0 grow overflow-y-auto lg:h-auto lg:overflow-x-hidden">
           <RecordsTable
             records={records}
             setSelectedRecord={setSelectedRecord}
@@ -133,7 +137,10 @@ const Records: FC<{}> = () => {
           />
         </div>
       </div>
-      <RawRecord record={selectedRecord!} />
+      <RawRecord
+        record={selectedRecord!}
+        key={hasInitialized ? "loaded" : "not yet loaded"}
+      />
     </div>
   );
 };
