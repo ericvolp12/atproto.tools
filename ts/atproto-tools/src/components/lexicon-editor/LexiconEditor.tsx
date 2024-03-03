@@ -46,7 +46,7 @@ interface LexPair {
   lexRaw: string;
 }
 
-const LexiconEditor: FC<{}> = () => {
+const LexiconEditor: FC = () => {
   const [activeLexPair, setActiveLexPair] = useState<LexPair>({
     lexID: "app.bsky.feed.like",
     lexRaw: JSON.stringify(initialLexicon, null, 2),
@@ -135,6 +135,7 @@ function LexEditor({ activeLexPair, setActiveLexPair }: LexEditorProps) {
           language="json"
           theme={darkMode ? "vs-dark" : "vs-light"}
           value={pendingLex}
+          path="lexicon.json"
           options={{
             readOnly: false,
             wordWrap: "on",
@@ -151,7 +152,7 @@ function LexEditor({ activeLexPair, setActiveLexPair }: LexEditorProps) {
               schemas: [
                 {
                   uri: "http://atproto.tools/lexicon-schema.json",
-                  fileMatch: ["*"],
+                  fileMatch: ["lexicon.json"],
                   schema: getLexiconJSONSchema(),
                 },
               ],
