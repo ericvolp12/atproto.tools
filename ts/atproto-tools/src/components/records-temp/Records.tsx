@@ -131,15 +131,15 @@ const RecordsTable: FC<RecordsTableProps> = ({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTableElement>) => {
-    e.preventDefault();
     if (e.key === "ArrowDown" && selectedRecord) {
+      e.preventDefault();
       const index = records.findIndex((record) => record.key === selectedRecord.key);
       if (index < records.length - 1) {
         setSelectedRecord(records[index + 1]);
         scrollToSelectedRecord(records[index + 1].key || "");
       }
-    }
-    if (e.key === "ArrowUp" && selectedRecord) {
+    } else if (e.key === "ArrowUp" && selectedRecord) {
+      e.preventDefault();
       const index = records.findIndex((record) => record.key === selectedRecord.key);
       if (index > 0 && records.length > 0) {
         setSelectedRecord(records[index - 1]);
