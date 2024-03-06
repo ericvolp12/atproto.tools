@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { useQuery } from "react-query";
+import { useSearchParams } from "react-router-dom";
 
 import { LOOKING_GLASS_HOST } from "../../constants";
 import { JSONRecord } from "../../models/Record";
@@ -32,20 +32,12 @@ const Records: FC<{}> = () => {
     document.title = "View Firehose Records";
   }, []);
 
-  const fetchRecords = async () => {
+  const fetchRecords = async (): Promise<JSONRecord[]> => {
     const url = new URL(`${LOOKING_GLASS_HOST}/records`);
-    if (didQuery) {
-      url.searchParams.append("did", didQuery);
-    }
-    if (collectionQuery) {
-      url.searchParams.append("collection", collectionQuery);
-    }
-    if (rkeyQuery) {
-      url.searchParams.append("rkey", rkeyQuery);
-    }
-    if (seqQuery) {
-      url.searchParams.append("seq", seqQuery);
-    }
+    if (didQuery) url.searchParams.append("did", didQuery);
+    if (collectionQuery) url.searchParams.append("collection", collectionQuery);
+    if (rkeyQuery) url.searchParams.append("rkey", rkeyQuery);
+    if (seqQuery) url.searchParams.append("seq", seqQuery);
 
     const response = await fetch(url.toString());
     const data = await response.json();
@@ -54,11 +46,10 @@ const Records: FC<{}> = () => {
       setError(data.error);
       return [];
     } else {
-      const newRecords = data.records.map((record: JSONRecord) => {
-        record.key = `${record.seq}_${record.collection}_${record.rkey}`;
-        return record;
-      });
-      return newRecords;
+      return data.records.map((record: JSONRecord) => ({
+        ...record,
+        key: `${record.seq}_${record.collection}_${record.rkey}`,
+      }));
     }
   };
 
@@ -68,40 +59,21 @@ const Records: FC<{}> = () => {
   );
 
   useEffect(() => {
-    if (records && records.length > 0) {
-      let firstRecord = null;
-      for (const record of records) {
-        if (record.raw) {
-          firstRecord = record;
-          break;
-        }
-      }
-      setSelectedRecord(firstRecord);
+    if (records?.length) {
+      setSelectedRecord(records.find((record) => record.raw) || null);
     }
   }, [records]);
 
   useEffect(() => {
-    searchParams.has("did")
-      ? setDIDQuery(searchParams.get("did")!)
-      : setDIDQuery(null);
-    searchParams.has("collection")
-      ? setCollectionQuery(searchParams.get("collection")!)
-      : setCollectionQuery(null);
-    searchParams.has("rkey")
-      ? setRKeyQuery(searchParams.get("rkey")!)
-      : setRKeyQuery(null);
-    searchParams.has("seq")
-      ? setSeqQuery(searchParams.get("seq")!)
-      : setSeqQuery(null);
+    setDIDQuery(searchParams.get("did") || null);
+    setCollectionQuery(searchParams.get("collection") || null);
+    setRKeyQuery(searchParams.get("rkey") || null);
+    setSeqQuery(searchParams.get("seq") || null);
 
     if (searchParams.has("uri")) {
-      // Parse out the AT URI and set the query params
       const uri = searchParams.get("uri")!;
       if (uri.startsWith("at://")) {
-        const uriParts = uri.split("/");
-        const did = uriParts[2];
-        const collection = uriParts[3];
-        const rkey = uriParts[4];
+        const [, , did, collection, rkey] = uri.split("/");
         setDIDQuery(did);
         setCollectionQuery(collection);
         setRKeyQuery(rkey);
@@ -140,20 +112,45 @@ const Records: FC<{}> = () => {
   );
 };
 
-function RecordsTable({
-  records,
-  selectedRecord,
-  setSelectedRecord,
-  isLoading,
-}: {
+interface RecordsTableProps {
   records: JSONRecord[];
   selectedRecord: JSONRecord | null;
   setSelectedRecord: (record: JSONRecord) => void;
   isLoading: boolean;
-}) {
+}
+
+const RecordsTable: FC<RecordsTableProps> = ({
+  records,
+  selectedRecord,
+  setSelectedRecord,
+  isLoading,
+}) => {
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTableElement>) => {
+    e.preventDefault();
+    if (e.key === "ArrowDown" && selectedRecord) {
+      const index = records.findIndex((record) => record.key === selectedRecord.key);
+      if (index < records.length - 1) {
+        setSelectedRecord(records[index + 1]);
+        scrollToSelectedRecord(records[index + 1].key || "");
+      }
+    }
+    if (e.key === "ArrowUp" && selectedRecord) {
+      const index = records.findIndex((record) => record.key === selectedRecord.key);
+      if (index > 0 && records.length > 0) {
+        setSelectedRecord(records[index - 1]);
+        scrollToSelectedRecord(records[index - 1].key || "");
+      }
+    }
+  };
+
+  const scrollToSelectedRecord = (key: string) => {
+    const selectedElement = document.getElementById(key);
+    selectedElement?.scrollIntoView({ block: "nearest" });
+  };
 
   return (
     <Table
@@ -163,47 +160,7 @@ function RecordsTable({
       sticky
       className="mx-0 [--gutter:theme(spacing.2)] focus:outline-none sm:[--gutter:theme(spacing.2)]"
       tabIndex={0}
-      onKeyDown={(e) => {
-        e.preventDefault();
-        if (e.key === "ArrowDown" && selectedRecord) {
-          const index = records.findIndex(
-            (record) => record.key === selectedRecord?.key,
-          );
-          if (index < records.length - 1) {
-            setSelectedRecord(records[index + 1]);
-            // Scroll to the selected record
-            if (selectedRecord.key) {
-              const selectedRecordElement = document.getElementById(
-                selectedRecord.key,
-              );
-              if (selectedRecordElement) {
-                selectedRecordElement.scrollIntoView({
-                  block: "nearest",
-                });
-              }
-            }
-          }
-        }
-        if (e.key === "ArrowUp" && selectedRecord) {
-          const index = records.findIndex(
-            (record) => record.key === selectedRecord?.key,
-          );
-          if (index > 0) {
-            setSelectedRecord(records[index - 1]);
-            // Scroll to the selected record
-            if (selectedRecord.key) {
-              const selectedRecordElement = document.getElementById(
-                selectedRecord.key,
-              );
-              if (selectedRecordElement) {
-                selectedRecordElement.scrollIntoView({
-                  block: "nearest",
-                });
-              }
-            }
-          }
-        }
-      }}
+      onKeyDown={handleKeyDown}
     >
       <TableHead>
         <TableRow>
@@ -244,70 +201,44 @@ function RecordsTable({
       </TableBody>
     </Table>
   );
-}
+};
 
-function SearchForm({
-  didQuery,
-  collectionQuery,
-  rkeyQuery,
-  seqQuery,
-  setSearchParams,
-}: {
+interface SearchFormProps {
   didQuery: string | null;
   collectionQuery: string | null;
   rkeyQuery: string | null;
   seqQuery: string | null;
   setSearchParams: (searchParams: URLSearchParams) => void;
-}) {
+}
+
+const SearchForm: FC<SearchFormProps> = ({ didQuery, collectionQuery, rkeyQuery, seqQuery, setSearchParams }) => {
   const [didSearch, setDIDSearch] = useState<string | null>(didQuery);
-  const [collectionSearch, setCollectionSearch] = useState<string | null>(
-    collectionQuery,
-  );
+  const [collectionSearch, setCollectionSearch] = useState<string | null>(collectionQuery);
   const [rkeySearch, setRKeySearch] = useState<string | null>(rkeyQuery);
   const [seqSearch, setSeqSearch] = useState<string | null>(seqQuery);
 
-  const handleSearch = () => {
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     const searchParams = new URLSearchParams();
-    if (didSearch) {
-      searchParams.append("did", didSearch);
-    }
-    if (collectionSearch) {
-      searchParams.append("collection", collectionSearch);
-    }
-    if (rkeySearch) {
-      searchParams.append("rkey", rkeySearch);
-    }
-    if (seqSearch) {
-      searchParams.append("seq", seqSearch);
-    }
+    if (didSearch) searchParams.append("did", didSearch);
+    if (collectionSearch) searchParams.append("collection", collectionSearch);
+    if (rkeySearch) searchParams.append("rkey", rkeySearch);
+    if (seqSearch) searchParams.append("seq", seqSearch);
     setSearchParams(searchParams);
   };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSearch();
-      }}
-    >
+    <form onSubmit={handleSearch}>
       <Fieldset className="mb-4">
         <FieldGroup>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-9 sm:gap-4">
             <Field className="col-span-1">
               <Label>Seq</Label>
-              <Input
-                name="seq"
-                value={seqSearch || ""}
-                onChange={(e) => setSeqSearch(e.target.value.trim())}
-              />
+              <Input name="seq" value={seqSearch || ""} onChange={(e) => setSeqSearch(e.target.value.trim())} />
             </Field>
             <Field className="col-span-3">
               <Label>DID</Label>
-              <Input
-                name="did"
-                value={didSearch || ""}
-                onChange={(e) => setDIDSearch(e.target.value.trim())}
-              />
+              <Input name="did" value={didSearch || ""} onChange={(e) => setDIDSearch(e.target.value.trim())} />
             </Field>
             <Field className="col-span-2">
               <Label>Collection</Label>
@@ -315,7 +246,7 @@ function SearchForm({
                 name="collection"
                 value={collectionSearch || ""}
                 onChange={(e) => setCollectionSearch(e.target.value.trim())}
-                disabled={didSearch === null || didSearch === ""}
+                disabled={!didSearch}
               />
             </Field>
             <Field className="col-span-2">
@@ -324,19 +255,11 @@ function SearchForm({
                 name="rkey"
                 value={rkeySearch || ""}
                 onChange={(e) => setRKeySearch(e.target.value.trim())}
-                disabled={
-                  didSearch === null ||
-                  didSearch === "" ||
-                  collectionSearch === null ||
-                  collectionSearch === ""
-                }
+                disabled={!didSearch || !collectionSearch}
               />
             </Field>
-
             <div className="mt-auto justify-self-end">
-              <Button onClick={handleSearch} type="submit">
-                Search
-              </Button>
+              <Button type="submit">Search</Button>
             </div>
           </div>
         </FieldGroup>
