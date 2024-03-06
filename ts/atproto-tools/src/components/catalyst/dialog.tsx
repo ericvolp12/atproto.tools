@@ -116,7 +116,7 @@ export function DialogBody({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  return <div {...props} className={clsx(className, "mt-6")} />;
+  return <div {...props} className={clsx(className, "mt-6 z-40")} />;
 }
 
 export function DialogActions({

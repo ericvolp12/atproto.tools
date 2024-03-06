@@ -6,28 +6,43 @@ import { lexicons } from "../../lexicons.ts";
 import { JSONRecord } from "../../models/Record";
 import { Badge } from "../catalyst/badge.tsx";
 import { Text } from "../catalyst/text.tsx";
-
-const lex = new Lexicons();
-const knownLexicons: string[] = [];
-lexicons.forEach((lexicon) => {
-  if (lexicon.defs.main?.type === "record") {
-    lex.add(jsonToLex(lexicon));
-    knownLexicons.push(lexicon.id);
-  }
-});
+import { useEffect, useState } from "react";
+import { Dialog, DialogBody, DialogTitle, DialogActions } from "../catalyst/dialog.tsx";
+import { Checkbox, CheckboxField, CheckboxGroup } from "../catalyst/checkbox.tsx";
+import { Button } from "../catalyst/button.tsx";
+import { Label } from "../catalyst/fieldset.tsx";
 
 interface RawRecordProps {
   record: JSONRecord;
 }
 
 function RawRecord({ record }: RawRecordProps) {
+  const [lex, setLex] = useState<Lexicons>(new Lexicons());
+  const [knownLexicons, setKnownLexicons] = useState<string[]>([]);
+  const [enabledLexicons, setEnabledLexicons] = useState<string[]>([]);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    const lex = new Lexicons();
+    const knownLexicons: string[] = [];
+    lexicons.forEach((lexicon) => {
+      if (lexicon.defs.main?.type === "record") {
+        lex.add(jsonToLex(lexicon));
+        knownLexicons.push(lexicon.id);
+      }
+    });
+    setLex(lex);
+    setKnownLexicons(knownLexicons);
+    setEnabledLexicons(knownLexicons);
+  }, []);
+
   const darkMode = useMediaQuery({
     query: "(prefers-color-scheme: dark)",
   });
 
   function validateLexicon(collection: string, raw: any): string {
-    if (!knownLexicons.includes(collection)) {
-      return "Unknown Collection";
+    if (!enabledLexicons.includes(collection)) {
+      return "Disabled Collection";
     }
 
     if (Object.keys(raw).length === 0) {
@@ -49,12 +64,20 @@ function RawRecord({ record }: RawRecordProps) {
     if (result === "Record is Valid") {
       return "green";
     } else if (
-      result === "Unknown Collection" ||
+      result === "Disabled Collection" ||
       result === "Record is Empty"
     ) {
       return "yellow";
     } else {
       return "red";
+    }
+  }
+
+  function handleLexiconToggle(lexiconId: string) {
+    if (enabledLexicons.includes(lexiconId)) {
+      setEnabledLexicons(enabledLexicons.filter((id) => id !== lexiconId));
+    } else {
+      setEnabledLexicons([...enabledLexicons, lexiconId]);
     }
   }
 
@@ -82,6 +105,27 @@ function RawRecord({ record }: RawRecordProps) {
 
   return (
     <div className="flex min-h-0 min-w-0 grow flex-col pt-12 lg:basis-0">
+      <Dialog open={settingsOpen} onClose={setSettingsOpen}>
+        <DialogTitle>
+          Lexicon Settings
+        </DialogTitle>
+        <DialogBody>
+          <CheckboxGroup>
+            {knownLexicons.map((lexiconId) => (
+              <CheckboxField key={lexiconId}>
+                <Checkbox
+                  checked={enabledLexicons.includes(lexiconId)}
+                  onChange={() => handleLexiconToggle(lexiconId)}
+                />
+                <Label>{lexiconId}</Label>
+              </CheckboxField>
+            ))}
+          </CheckboxGroup>
+        </DialogBody>
+        <DialogActions>
+          <Button onClick={() => setSettingsOpen(false)}>Save</Button>
+        </DialogActions>
+      </Dialog>
       <Text className="mb-2">
         {record.collection !== "" ? (
           <>
@@ -114,6 +158,7 @@ function RawRecord({ record }: RawRecordProps) {
 
       <div className="mt-2">
         <Badge color={badgeColor}>{lexValidationResult}</Badge>
+        {/* <Button onClick={() => setSettingsOpen(true)}>Settings</Button> */}
       </div>
     </div>
   );
