@@ -11,8 +11,7 @@ const lex = new Lexicons();
 const knownLexicons: string[] = [];
 lexicons.forEach((lexicon) => {
   if (lexicon.defs.main?.type === "record") {
-    // @ts-ignore
-    lex.add(lexicon);
+    lex.add(jsonToLex(lexicon));
     knownLexicons.push(lexicon.id);
   }
 });
