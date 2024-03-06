@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useQuery } from "react-query";
 
 import { LOOKING_GLASS_HOST } from "../../constants";
 import { JSONRecord } from "../../models/Record";
@@ -18,16 +19,12 @@ import RawRecord from "./RawRecord";
 
 const Records: FC<{}> = () => {
   const [selectedRecord, setSelectedRecord] = useState<JSONRecord | null>(null);
-  const [records, setRecords] = useState<JSONRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [hasInitialized, setHasInitialized] = useState(false);
 
   const [didQuery, setDIDQuery] = useState<string | null>(null);
   const [collectionQuery, setCollectionQuery] = useState<string | null>(null);
   const [rkeyQuery, setRKeyQuery] = useState<string | null>(null);
   const [seqQuery, setSeqQuery] = useState<string | null>(null);
-
-  const [queryInitialized, setQueryInitialized] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -35,7 +32,7 @@ const Records: FC<{}> = () => {
     document.title = "View Firehose Records";
   }, []);
 
-  const fetchRecords = () => {
+  const fetchRecords = async () => {
     const url = new URL(`${LOOKING_GLASS_HOST}/records`);
     if (didQuery) {
       url.searchParams.append("did", didQuery);
@@ -49,38 +46,39 @@ const Records: FC<{}> = () => {
     if (seqQuery) {
       url.searchParams.append("seq", seqQuery);
     }
-    fetch(url.toString())
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.error) {
-          setError(data.error);
-        } else {
-          const newRecords = data.records.map((record: JSONRecord) => {
-            record.key = `${record.seq}_${record.collection}_${record.rkey}`;
-            return record;
-          });
-          let firstRecord = null;
-          for (const record of newRecords) {
-            if (record.raw) {
-              firstRecord = record;
-              break;
-            }
-          }
-          setRecords(newRecords);
-          setSelectedRecord(firstRecord);
-        }
-      })
-      .finally(() => {
-        setHasInitialized(true);
+
+    const response = await fetch(url.toString());
+    const data = await response.json();
+
+    if (data.error) {
+      setError(data.error);
+      return [];
+    } else {
+      const newRecords = data.records.map((record: JSONRecord) => {
+        record.key = `${record.seq}_${record.collection}_${record.rkey}`;
+        return record;
       });
+      return newRecords;
+    }
   };
 
+  const { data: records, isLoading } = useQuery(
+    ["records", didQuery, collectionQuery, rkeyQuery, seqQuery],
+    fetchRecords,
+  );
+
   useEffect(() => {
-    // Wait until all query params are set before fetching records
-    if (queryInitialized) {
-      fetchRecords();
+    if (records && records.length > 0) {
+      let firstRecord = null;
+      for (const record of records) {
+        if (record.raw) {
+          firstRecord = record;
+          break;
+        }
+      }
+      setSelectedRecord(firstRecord);
     }
-  }, [didQuery, collectionQuery, rkeyQuery, seqQuery, queryInitialized]);
+  }, [records]);
 
   useEffect(() => {
     searchParams.has("did")
@@ -109,8 +107,6 @@ const Records: FC<{}> = () => {
         setRKeyQuery(rkey);
       }
     }
-
-    setQueryInitialized(true);
   }, [searchParams]);
 
   return (
@@ -119,27 +115,26 @@ const Records: FC<{}> = () => {
         <h1 className="text-center text-4xl font-bold">
           View Firehose Records
         </h1>
-        {queryInitialized && (
-          <SearchForm
-            didQuery={didQuery}
-            collectionQuery={collectionQuery}
-            rkeyQuery={rkeyQuery}
-            seqQuery={seqQuery}
-            setSearchParams={setSearchParams}
-          />
-        )}
+        <SearchForm
+          didQuery={didQuery}
+          collectionQuery={collectionQuery}
+          rkeyQuery={rkeyQuery}
+          seqQuery={seqQuery}
+          setSearchParams={setSearchParams}
+        />
 
         <div className="h-96 min-h-0 grow overflow-y-auto lg:h-auto lg:overflow-x-hidden">
           <RecordsTable
-            records={records}
+            records={records || []}
             setSelectedRecord={setSelectedRecord}
             selectedRecord={selectedRecord}
+            isLoading={isLoading}
           />
         </div>
       </div>
       <RawRecord
         record={selectedRecord!}
-        key={hasInitialized ? "loaded" : "not yet loaded"}
+        key={records ? "loaded" : "not yet loaded"}
       />
     </div>
   );
@@ -149,11 +144,17 @@ function RecordsTable({
   records,
   selectedRecord,
   setSelectedRecord,
+  isLoading,
 }: {
   records: JSONRecord[];
   selectedRecord: JSONRecord | null;
   setSelectedRecord: (record: JSONRecord) => void;
+  isLoading: boolean;
 }) {
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Table
       striped
@@ -414,7 +415,8 @@ function Tooltip({
       onMouseLeave={() => setShowTooltip(false)}
     >
       <div
-        className={`absolute z-30 ${positionStyles[position]} hidden w-auto transition duration-300 ease-in-out group-hover:block ${!showTooltip ? "hidden opacity-0" : "opacity-100"}`}
+        className={`absolute z-30 ${positionStyles[position]} hidden w-auto transition duration-300 ease-in-out group-hover:block ${!showTooltip ? "hidden opacity-0" : "opacity-100"
+          }`}
       >
         <div className="bottom-full right-0 whitespace-nowrap rounded bg-black px-4 py-1 text-xs text-white">
           {text}
