@@ -56,6 +56,7 @@ const Records: FC<{}> = () => {
   const { data: records, isLoading } = useQuery(
     ["records", didQuery, collectionQuery, rkeyQuery, seqQuery],
     fetchRecords,
+    { refetchOnWindowFocus: false, }
   );
 
   useEffect(() => {
