@@ -228,6 +228,13 @@ const SearchForm: FC<SearchFormProps> = ({ didQuery, collectionQuery, rkeyQuery,
     setSearchParams(searchParams);
   };
 
+  useEffect(() => {
+    setDIDSearch(didQuery || null);
+    setCollectionSearch(collectionQuery || null);
+    setRKeySearch(rkeyQuery || null);
+    setSeqSearch(seqQuery || null);
+  }, [didQuery, collectionQuery, rkeyQuery, seqQuery]);
+
   return (
     <form onSubmit={handleSearch}>
       <Fieldset className="mb-4">
