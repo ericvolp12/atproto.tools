@@ -1,10 +1,12 @@
 package stream
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"time"
 
@@ -201,6 +203,10 @@ func (s *Stream) HandleGetRecords(c echo.Context) error {
 	for i, r := range records {
 		resp.Records[i] = dbRecordIDToJSONRecord(r, identityMap[r.Repo])
 	}
+
+	// Do a final sort by firehose sequence number
+	slices.SortFunc(resp.Records, recordSeqSortFunc)
+
 	return c.JSON(http.StatusOK, resp)
 }
 
@@ -433,4 +439,9 @@ func (s *Stream) HandleGetIdentities(c echo.Context) error {
 		resp.Identities[i] = dbIdentityToJSONIdentity(id)
 	}
 	return c.JSON(http.StatusOK, resp)
+}
+
+// Sort by firehose sequence number descending
+func recordSeqSortFunc(i, j JSONRecord) int {
+	return cmp.Compare(j.FirehoseSeq, i.FirehoseSeq)
 }
