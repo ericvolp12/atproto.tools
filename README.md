@@ -19,3 +19,15 @@ The consumer deletes old records from the database to keep the database from gro
 To run the consumer via Docker Compose, you can run: `make lg-consumer-up`.
 
 The consumer stores its SQLite DB in `./data/lg-consumer` by default.
+
+## Tools
+
+### Checkout
+
+The Checkout tool lets you download your AT Proto repo as a directory of JSON files (one per record).
+
+It lets you select a PDS to download from, defaulting to the Relay (`bsky.network`) and supports compressing the result into a gzipped tarball (since lots of this JSON data is highly compressible).
+
+To use the Checkout tool, you can `go run cmd/checkout/main.go <repo-DID>`.
+
+Use the `--help` flag for more options.
