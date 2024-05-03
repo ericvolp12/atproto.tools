@@ -20,5 +20,5 @@ services:
     ports:
       - "6962:8080"
     volumes:
-      - ./data/lg-consumer:/data
+      - ../../data/lg-consumer:/data
       - ~/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro

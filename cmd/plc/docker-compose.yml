@@ -8,9 +8,9 @@ services:
     image: plc-exporter
     container_name: plc-exporter
     environment:
-      - PLC_MIRROR_CHECK_INTERVAL=5s
-      - PLC_MIRROR_DATA_DIR=/data/plc-exporter
+      - PLC_EXPORTER_CHECK_INTERVAL=5s
+      - PLC_EXPORTER_DATA_DIR=/data
     ports:
       - "3260:3260"
     volumes:
-      - ./data/plc-exporter:/data
+      - ../../data/plc-exporter:/data
