@@ -2,7 +2,7 @@ version: "3.8"
 services:
   looking-glass-consumer:
     build:
-      context: .
+      context: ../../
       dockerfile: cmd/stream/Dockerfile
     restart: always
     image: looking-glass-consumer

@@ -9,12 +9,14 @@ require (
 	github.com/ericvolp12/bsky-experiments v0.0.0-20240221172831-2eb513f42772
 	github.com/gorilla/websocket v1.5.1
 	github.com/ipfs/go-cid v0.4.1
+	github.com/labstack/echo-contrib v0.15.0
 	github.com/labstack/echo/v4 v4.11.3
 	github.com/orandin/slog-gorm v1.1.0
 	github.com/prometheus/client_golang v1.18.0
 	github.com/samber/slog-echo v1.8.0
 	github.com/sevenNt/echo-pprof v0.1.1-0.20230131020615-4dd36891e14b
 	github.com/urfave/cli/v2 v2.27.1
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.47.0
 	go.opentelemetry.io/otel v1.24.0
 	golang.org/x/time v0.5.0
 	gorm.io/driver/sqlite v1.5.4
@@ -111,7 +113,6 @@ require (
 	gitlab.com/yawning/tuplehash v0.0.0-20230713102510-df83abbf9a02 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.47.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.47.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.21.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.21.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
