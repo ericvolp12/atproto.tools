@@ -147,13 +147,15 @@ func (plc *PLC) GetNextPage(ctx context.Context) (int, error) {
 
 	after := ""
 	if plc.Cursor.ID != 0 {
-		after = fmt.Sprintf("&after=%s", plc.Cursor.LastCreatedAt.Format(time.RFC3339))
+		after = fmt.Sprintf("&after=%s", plc.Cursor.LastCreatedAt.Format(time.RFC3339Nano))
 	}
 
 	u, err := url.Parse(fmt.Sprintf("%s/export?count=%d%s", plc.Host, plc.PageSize, after))
 	if err != nil {
 		return 0, fmt.Errorf("failed to parse URL: %w", err)
 	}
+
+	plc.Logger.Info("getting next page", "url", u.String())
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
@@ -195,14 +197,6 @@ func (plc *PLC) GetNextPage(ctx context.Context) (int, error) {
 			return 0, fmt.Errorf("failed to decode JSON: %w", err)
 		}
 
-		// Skip if we've already seen this op
-		if op.CreatedAt.Before(plc.Cursor.LastCreatedAt) {
-			continue
-		}
-		if op.CreatedAt.Equal(plc.Cursor.LastCreatedAt) && op.DID == plc.Cursor.DID && op.CID == plc.Cursor.CID {
-			continue
-		}
-
 		dbOp, err := op.ToDBOp()
 		if err != nil {
 			return 0, fmt.Errorf("failed to convert op to dbOp: %w", err)
@@ -210,11 +204,15 @@ func (plc *PLC) GetNextPage(ctx context.Context) (int, error) {
 
 		dbOps = append(dbOps, dbOp)
 
+		newOps++
 		plc.Cursor.DID = op.DID
 		plc.Cursor.CID = op.CID
 		plc.Cursor.LastCreatedAt = op.CreatedAt
 		plc.Cursor.OpsSeen++
-		newOps++
+	}
+
+	if len(dbOps) == 0 {
+		return 0, nil
 	}
 
 	err = plc.DB.CreateInBatches(dbOps, 100).Error
@@ -242,7 +240,7 @@ type DBOp struct {
 type Op struct {
 	DID       string    `json:"did"`
 	CID       string    `json:"cid"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"createdAt"`
 	Nullified bool      `json:"nullified"`
 	Operation any       `json:"operation"`
 }
