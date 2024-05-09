@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -50,6 +51,12 @@ func NewPLC(ctx context.Context, host, dataDir string, logger *slog.Logger, chec
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
+	// Migrate the database schema
+	err = db.AutoMigrate(&Cursor{}, &DBOp{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to migrate database: %w", err)
+	}
+
 	// Set Pragmas
 	err = db.Exec("PRAGMA journal_mode=WAL;").Error
 	if err != nil {
@@ -59,12 +66,6 @@ func NewPLC(ctx context.Context, host, dataDir string, logger *slog.Logger, chec
 	err = db.Exec("PRAGMA synchronous=normal;").Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to set synchronous mode: %w", err)
-	}
-
-	// Migrate the database schema
-	err = db.AutoMigrate(&Cursor{}, &DBOp{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
 
 	client := &http.Client{
@@ -191,7 +192,7 @@ func (plc *PLC) GetNextPage(ctx context.Context) (int, error) {
 	// Response is JSONLines
 	dec := json.NewDecoder(resp.Body)
 	for dec.More() {
-		var op Op
+		var op PLCOp
 		err := dec.Decode(&op)
 		if err != nil {
 			return 0, fmt.Errorf("failed to decode JSON: %w", err)
@@ -235,9 +236,11 @@ type DBOp struct {
 	CreatedAt time.Time `gorm:"index:idx_did_created_at,sort:desc"`
 	Nullified bool
 	Operation []byte
+	PDS       string `gorm:"index:idx_pds"`
+	Handle    string `gorm:"index:idx_handle"`
 }
 
-type Op struct {
+type PLCOp struct {
 	DID       string    `json:"did"`
 	CID       string    `json:"cid"`
 	CreatedAt time.Time `json:"createdAt"`
@@ -246,7 +249,7 @@ type Op struct {
 }
 
 // GetSig returns the value of the "sig" key in the Operation map
-func (op *Op) GetSig() (string, error) {
+func (op *PLCOp) GetSig() (string, error) {
 	// Check if op.Operation is a map and has a "sig" string key
 	// If it does, return the value of the "sig" key
 	opMap, ok := op.Operation.(map[string]interface{})
@@ -262,10 +265,39 @@ func (op *Op) GetSig() (string, error) {
 	return sig, nil
 }
 
-func (op *Op) ToDBOp() (*DBOp, error) {
-	opJSON, err := json.Marshal(op)
+func (op *PLCOp) ToDBOp() (*DBOp, error) {
+	opJSON, err := json.Marshal(op.Operation)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal op: %w", err)
+	}
+
+	// Extract "handle" from the operation "alsoKnownAs" array
+	handle := ""
+	opMap, ok := op.Operation.(map[string]interface{})
+	if ok {
+		alsoKnownAs, ok := opMap["alsoKnownAs"].([]interface{})
+		if ok {
+			for _, aka := range alsoKnownAs {
+				handle, ok = aka.(string)
+				if ok {
+					// Trim the at:// prefix
+					handle = strings.TrimPrefix(handle, "at://")
+					break
+				}
+			}
+		}
+	}
+
+	// Extract PDS from the operation "services.atproto_pds.endpoint" key
+	pds := ""
+	if ok {
+		if services, ok := opMap["services"].(map[string]interface{}); ok {
+			if atprotoPDS, ok := services["atproto_pds"].(map[string]interface{}); ok {
+				if endpoint, ok := atprotoPDS["endpoint"].(string); ok {
+					pds = endpoint
+				}
+			}
+		}
 	}
 
 	return &DBOp{
@@ -274,15 +306,23 @@ func (op *Op) ToDBOp() (*DBOp, error) {
 		CreatedAt: op.CreatedAt,
 		Nullified: op.Nullified,
 		Operation: opJSON,
+		Handle:    handle,
+		PDS:       pds,
 	}, nil
 }
 
-func (op *DBOp) ToOp() (*Op, error) {
-	var opJSON Op
-	err := json.Unmarshal(op.Operation, &opJSON)
+func (op *DBOp) ToOp() (*PLCOp, error) {
+	var innerOp any
+	err := json.Unmarshal(op.Operation, &innerOp)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal op: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal operation: %w", err)
 	}
 
-	return &opJSON, nil
+	return &PLCOp{
+		DID:       op.DID,
+		CID:       op.CID,
+		CreatedAt: op.CreatedAt,
+		Nullified: op.Nullified,
+		Operation: innerOp,
+	}, nil
 }
