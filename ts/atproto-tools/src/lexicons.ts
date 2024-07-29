@@ -1,53 +1,6 @@
 export const lexicons = [
   {
     "lexicon": 1,
-    "id": "com.atproto.admin.createCommunicationTemplate",
-    "defs": {
-      "main": {
-        "type": "procedure",
-        "description": "Administrative action to create a new, re-usable communication (email for now) template.",
-        "input": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "object",
-            "required": [
-              "subject",
-              "contentMarkdown",
-              "name"
-            ],
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Name of the template."
-              },
-              "contentMarkdown": {
-                "type": "string",
-                "description": "Content of the template, markdown supported, can contain variable placeholders."
-              },
-              "subject": {
-                "type": "string",
-                "description": "Subject of the message, used in emails."
-              },
-              "createdBy": {
-                "type": "string",
-                "format": "did",
-                "description": "DID of the user who is creating the template."
-              }
-            }
-          }
-        },
-        "output": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "ref",
-            "ref": "com.atproto.admin.defs#communicationTemplateView"
-          }
-        }
-      }
-    }
-  },
-  {
-    "lexicon": 1,
     "id": "com.atproto.admin.defs",
     "defs": {
       "statusAttr": {
@@ -61,417 +14,6 @@ export const lexicons = [
           },
           "ref": {
             "type": "string"
-          }
-        }
-      },
-      "modEventView": {
-        "type": "object",
-        "required": [
-          "id",
-          "event",
-          "subject",
-          "subjectBlobCids",
-          "createdBy",
-          "createdAt"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "event": {
-            "type": "union",
-            "refs": [
-              "#modEventTakedown",
-              "#modEventReverseTakedown",
-              "#modEventComment",
-              "#modEventReport",
-              "#modEventLabel",
-              "#modEventAcknowledge",
-              "#modEventEscalate",
-              "#modEventMute",
-              "#modEventEmail",
-              "#modEventResolveAppeal"
-            ]
-          },
-          "subject": {
-            "type": "union",
-            "refs": [
-              "#repoRef",
-              "com.atproto.repo.strongRef"
-            ]
-          },
-          "subjectBlobCids": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "did"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "creatorHandle": {
-            "type": "string"
-          },
-          "subjectHandle": {
-            "type": "string"
-          }
-        }
-      },
-      "modEventViewDetail": {
-        "type": "object",
-        "required": [
-          "id",
-          "event",
-          "subject",
-          "subjectBlobs",
-          "createdBy",
-          "createdAt"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "event": {
-            "type": "union",
-            "refs": [
-              "#modEventTakedown",
-              "#modEventReverseTakedown",
-              "#modEventComment",
-              "#modEventReport",
-              "#modEventLabel",
-              "#modEventAcknowledge",
-              "#modEventEscalate",
-              "#modEventMute",
-              "#modEventEmail",
-              "#modEventResolveAppeal"
-            ]
-          },
-          "subject": {
-            "type": "union",
-            "refs": [
-              "#repoView",
-              "#repoViewNotFound",
-              "#recordView",
-              "#recordViewNotFound"
-            ]
-          },
-          "subjectBlobs": {
-            "type": "array",
-            "items": {
-              "type": "ref",
-              "ref": "#blobView"
-            }
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "did"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "datetime"
-          }
-        }
-      },
-      "reportView": {
-        "type": "object",
-        "required": [
-          "id",
-          "reasonType",
-          "subject",
-          "reportedBy",
-          "createdAt",
-          "resolvedByActionIds"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "reasonType": {
-            "type": "ref",
-            "ref": "com.atproto.moderation.defs#reasonType"
-          },
-          "comment": {
-            "type": "string"
-          },
-          "subjectRepoHandle": {
-            "type": "string"
-          },
-          "subject": {
-            "type": "union",
-            "refs": [
-              "#repoRef",
-              "com.atproto.repo.strongRef"
-            ]
-          },
-          "reportedBy": {
-            "type": "string",
-            "format": "did"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "resolvedByActionIds": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            }
-          }
-        }
-      },
-      "subjectStatusView": {
-        "type": "object",
-        "required": [
-          "id",
-          "subject",
-          "createdAt",
-          "updatedAt",
-          "reviewState"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "subject": {
-            "type": "union",
-            "refs": [
-              "#repoRef",
-              "com.atproto.repo.strongRef"
-            ]
-          },
-          "subjectBlobCids": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "cid"
-            }
-          },
-          "subjectRepoHandle": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "datetime",
-            "description": "Timestamp referencing when the last update was made to the moderation status of the subject"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "datetime",
-            "description": "Timestamp referencing the first moderation status impacting event was emitted on the subject"
-          },
-          "reviewState": {
-            "type": "ref",
-            "ref": "#subjectReviewState"
-          },
-          "comment": {
-            "type": "string",
-            "description": "Sticky comment on the subject."
-          },
-          "muteUntil": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "lastReviewedBy": {
-            "type": "string",
-            "format": "did"
-          },
-          "lastReviewedAt": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "lastReportedAt": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "lastAppealedAt": {
-            "type": "string",
-            "format": "datetime",
-            "description": "Timestamp referencing when the author of the subject appealed a moderation action"
-          },
-          "takendown": {
-            "type": "boolean"
-          },
-          "appealed": {
-            "type": "boolean",
-            "description": "True indicates that the a previously taken moderator action was appealed against, by the author of the content. False indicates last appeal was resolved by moderators."
-          },
-          "suspendUntil": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "reportViewDetail": {
-        "type": "object",
-        "required": [
-          "id",
-          "reasonType",
-          "subject",
-          "reportedBy",
-          "createdAt",
-          "resolvedByActions"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "reasonType": {
-            "type": "ref",
-            "ref": "com.atproto.moderation.defs#reasonType"
-          },
-          "comment": {
-            "type": "string"
-          },
-          "subject": {
-            "type": "union",
-            "refs": [
-              "#repoView",
-              "#repoViewNotFound",
-              "#recordView",
-              "#recordViewNotFound"
-            ]
-          },
-          "subjectStatus": {
-            "type": "ref",
-            "ref": "com.atproto.admin.defs#subjectStatusView"
-          },
-          "reportedBy": {
-            "type": "string",
-            "format": "did"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "resolvedByActions": {
-            "type": "array",
-            "items": {
-              "type": "ref",
-              "ref": "com.atproto.admin.defs#modEventView"
-            }
-          }
-        }
-      },
-      "repoView": {
-        "type": "object",
-        "required": [
-          "did",
-          "handle",
-          "relatedRecords",
-          "indexedAt",
-          "moderation"
-        ],
-        "properties": {
-          "did": {
-            "type": "string",
-            "format": "did"
-          },
-          "handle": {
-            "type": "string",
-            "format": "handle"
-          },
-          "email": {
-            "type": "string"
-          },
-          "relatedRecords": {
-            "type": "array",
-            "items": {
-              "type": "unknown"
-            }
-          },
-          "indexedAt": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "moderation": {
-            "type": "ref",
-            "ref": "#moderation"
-          },
-          "invitedBy": {
-            "type": "ref",
-            "ref": "com.atproto.server.defs#inviteCode"
-          },
-          "invitesDisabled": {
-            "type": "boolean"
-          },
-          "inviteNote": {
-            "type": "string"
-          }
-        }
-      },
-      "repoViewDetail": {
-        "type": "object",
-        "required": [
-          "did",
-          "handle",
-          "relatedRecords",
-          "indexedAt",
-          "moderation"
-        ],
-        "properties": {
-          "did": {
-            "type": "string",
-            "format": "did"
-          },
-          "handle": {
-            "type": "string",
-            "format": "handle"
-          },
-          "email": {
-            "type": "string"
-          },
-          "relatedRecords": {
-            "type": "array",
-            "items": {
-              "type": "unknown"
-            }
-          },
-          "indexedAt": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "moderation": {
-            "type": "ref",
-            "ref": "#moderationDetail"
-          },
-          "labels": {
-            "type": "array",
-            "items": {
-              "type": "ref",
-              "ref": "com.atproto.label.defs#label"
-            }
-          },
-          "invitedBy": {
-            "type": "ref",
-            "ref": "com.atproto.server.defs#inviteCode"
-          },
-          "invites": {
-            "type": "array",
-            "items": {
-              "type": "ref",
-              "ref": "com.atproto.server.defs#inviteCode"
-            }
-          },
-          "invitesDisabled": {
-            "type": "boolean"
-          },
-          "inviteNote": {
-            "type": "string"
-          },
-          "emailConfirmedAt": {
-            "type": "string",
-            "format": "datetime"
           }
         }
       },
@@ -524,18 +66,10 @@ export const lexicons = [
           },
           "inviteNote": {
             "type": "string"
-          }
-        }
-      },
-      "repoViewNotFound": {
-        "type": "object",
-        "required": [
-          "did"
-        ],
-        "properties": {
-          "did": {
+          },
+          "deactivatedAt": {
             "type": "string",
-            "format": "did"
+            "format": "datetime"
           }
         }
       },
@@ -571,452 +105,6 @@ export const lexicons = [
             "format": "at-uri"
           }
         }
-      },
-      "recordView": {
-        "type": "object",
-        "required": [
-          "uri",
-          "cid",
-          "value",
-          "blobCids",
-          "indexedAt",
-          "moderation",
-          "repo"
-        ],
-        "properties": {
-          "uri": {
-            "type": "string",
-            "format": "at-uri"
-          },
-          "cid": {
-            "type": "string",
-            "format": "cid"
-          },
-          "value": {
-            "type": "unknown"
-          },
-          "blobCids": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "cid"
-            }
-          },
-          "indexedAt": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "moderation": {
-            "type": "ref",
-            "ref": "#moderation"
-          },
-          "repo": {
-            "type": "ref",
-            "ref": "#repoView"
-          }
-        }
-      },
-      "recordViewDetail": {
-        "type": "object",
-        "required": [
-          "uri",
-          "cid",
-          "value",
-          "blobs",
-          "indexedAt",
-          "moderation",
-          "repo"
-        ],
-        "properties": {
-          "uri": {
-            "type": "string",
-            "format": "at-uri"
-          },
-          "cid": {
-            "type": "string",
-            "format": "cid"
-          },
-          "value": {
-            "type": "unknown"
-          },
-          "blobs": {
-            "type": "array",
-            "items": {
-              "type": "ref",
-              "ref": "#blobView"
-            }
-          },
-          "labels": {
-            "type": "array",
-            "items": {
-              "type": "ref",
-              "ref": "com.atproto.label.defs#label"
-            }
-          },
-          "indexedAt": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "moderation": {
-            "type": "ref",
-            "ref": "#moderationDetail"
-          },
-          "repo": {
-            "type": "ref",
-            "ref": "#repoView"
-          }
-        }
-      },
-      "recordViewNotFound": {
-        "type": "object",
-        "required": [
-          "uri"
-        ],
-        "properties": {
-          "uri": {
-            "type": "string",
-            "format": "at-uri"
-          }
-        }
-      },
-      "moderation": {
-        "type": "object",
-        "properties": {
-          "subjectStatus": {
-            "type": "ref",
-            "ref": "#subjectStatusView"
-          }
-        }
-      },
-      "moderationDetail": {
-        "type": "object",
-        "properties": {
-          "subjectStatus": {
-            "type": "ref",
-            "ref": "#subjectStatusView"
-          }
-        }
-      },
-      "blobView": {
-        "type": "object",
-        "required": [
-          "cid",
-          "mimeType",
-          "size",
-          "createdAt"
-        ],
-        "properties": {
-          "cid": {
-            "type": "string",
-            "format": "cid"
-          },
-          "mimeType": {
-            "type": "string"
-          },
-          "size": {
-            "type": "integer"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "details": {
-            "type": "union",
-            "refs": [
-              "#imageDetails",
-              "#videoDetails"
-            ]
-          },
-          "moderation": {
-            "type": "ref",
-            "ref": "#moderation"
-          }
-        }
-      },
-      "imageDetails": {
-        "type": "object",
-        "required": [
-          "width",
-          "height"
-        ],
-        "properties": {
-          "width": {
-            "type": "integer"
-          },
-          "height": {
-            "type": "integer"
-          }
-        }
-      },
-      "videoDetails": {
-        "type": "object",
-        "required": [
-          "width",
-          "height",
-          "length"
-        ],
-        "properties": {
-          "width": {
-            "type": "integer"
-          },
-          "height": {
-            "type": "integer"
-          },
-          "length": {
-            "type": "integer"
-          }
-        }
-      },
-      "subjectReviewState": {
-        "type": "string",
-        "knownValues": [
-          "#reviewOpen",
-          "#reviewEscalated",
-          "#reviewClosed",
-          "#reviewNone"
-        ]
-      },
-      "reviewOpen": {
-        "type": "token",
-        "description": "Moderator review status of a subject: Open. Indicates that the subject needs to be reviewed by a moderator"
-      },
-      "reviewEscalated": {
-        "type": "token",
-        "description": "Moderator review status of a subject: Escalated. Indicates that the subject was escalated for review by a moderator"
-      },
-      "reviewClosed": {
-        "type": "token",
-        "description": "Moderator review status of a subject: Closed. Indicates that the subject was already reviewed and resolved by a moderator"
-      },
-      "reviewNone": {
-        "type": "token",
-        "description": "Moderator review status of a subject: Unnecessary. Indicates that the subject does not need a review at the moment but there is probably some moderation related metadata available for it"
-      },
-      "modEventTakedown": {
-        "type": "object",
-        "description": "Take down a subject permanently or temporarily",
-        "properties": {
-          "comment": {
-            "type": "string"
-          },
-          "durationInHours": {
-            "type": "integer",
-            "description": "Indicates how long the takedown should be in effect before automatically expiring."
-          }
-        }
-      },
-      "modEventReverseTakedown": {
-        "type": "object",
-        "description": "Revert take down action on a subject",
-        "properties": {
-          "comment": {
-            "type": "string",
-            "description": "Describe reasoning behind the reversal."
-          }
-        }
-      },
-      "modEventResolveAppeal": {
-        "type": "object",
-        "description": "Resolve appeal on a subject",
-        "properties": {
-          "comment": {
-            "type": "string",
-            "description": "Describe resolution."
-          }
-        }
-      },
-      "modEventComment": {
-        "type": "object",
-        "description": "Add a comment to a subject",
-        "required": [
-          "comment"
-        ],
-        "properties": {
-          "comment": {
-            "type": "string"
-          },
-          "sticky": {
-            "type": "boolean",
-            "description": "Make the comment persistent on the subject"
-          }
-        }
-      },
-      "modEventReport": {
-        "type": "object",
-        "description": "Report a subject",
-        "required": [
-          "reportType"
-        ],
-        "properties": {
-          "comment": {
-            "type": "string"
-          },
-          "reportType": {
-            "type": "ref",
-            "ref": "com.atproto.moderation.defs#reasonType"
-          }
-        }
-      },
-      "modEventLabel": {
-        "type": "object",
-        "description": "Apply/Negate labels on a subject",
-        "required": [
-          "createLabelVals",
-          "negateLabelVals"
-        ],
-        "properties": {
-          "comment": {
-            "type": "string"
-          },
-          "createLabelVals": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "negateLabelVals": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "modEventAcknowledge": {
-        "type": "object",
-        "properties": {
-          "comment": {
-            "type": "string"
-          }
-        }
-      },
-      "modEventEscalate": {
-        "type": "object",
-        "properties": {
-          "comment": {
-            "type": "string"
-          }
-        }
-      },
-      "modEventMute": {
-        "type": "object",
-        "description": "Mute incoming reports on a subject",
-        "required": [
-          "durationInHours"
-        ],
-        "properties": {
-          "comment": {
-            "type": "string"
-          },
-          "durationInHours": {
-            "type": "integer",
-            "description": "Indicates how long the subject should remain muted."
-          }
-        }
-      },
-      "modEventUnmute": {
-        "type": "object",
-        "description": "Unmute action on a subject",
-        "properties": {
-          "comment": {
-            "type": "string",
-            "description": "Describe reasoning behind the reversal."
-          }
-        }
-      },
-      "modEventEmail": {
-        "type": "object",
-        "description": "Keep a log of outgoing email to a user",
-        "required": [
-          "subjectLine"
-        ],
-        "properties": {
-          "subjectLine": {
-            "type": "string",
-            "description": "The subject line of the email sent to the user."
-          },
-          "content": {
-            "type": "string",
-            "description": "The content of the email sent to the user."
-          },
-          "comment": {
-            "type": "string",
-            "description": "Additional comment about the outgoing comm."
-          }
-        }
-      },
-      "modEventTag": {
-        "type": "object",
-        "description": "Add/Remove a tag on a subject",
-        "required": [
-          "add",
-          "remove"
-        ],
-        "properties": {
-          "add": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Tags to be added to the subject. If already exists, won't be duplicated."
-          },
-          "remove": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Tags to be removed to the subject. Ignores a tag If it doesn't exist, won't be duplicated."
-          },
-          "comment": {
-            "type": "string",
-            "description": "Additional comment about added/removed tags."
-          }
-        }
-      },
-      "communicationTemplateView": {
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "contentMarkdown",
-          "disabled",
-          "lastUpdatedBy",
-          "createdAt",
-          "updatedAt"
-        ],
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string",
-            "description": "Name of the template."
-          },
-          "subject": {
-            "type": "string",
-            "description": "Content of the template, can contain markdown and variable placeholders."
-          },
-          "contentMarkdown": {
-            "type": "string",
-            "description": "Subject of the message, used in emails."
-          },
-          "disabled": {
-            "type": "boolean"
-          },
-          "lastUpdatedBy": {
-            "type": "string",
-            "format": "did",
-            "description": "DID of the user who last updated the template."
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "datetime"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "datetime"
-          }
-        }
       }
     }
   },
@@ -1038,30 +126,6 @@ export const lexicons = [
               "did": {
                 "type": "string",
                 "format": "did"
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  {
-    "lexicon": 1,
-    "id": "com.atproto.admin.deleteCommunicationTemplate",
-    "defs": {
-      "main": {
-        "type": "procedure",
-        "description": "Delete a communication template.",
-        "input": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "object",
-            "required": [
-              "id"
-            ],
-            "properties": {
-              "id": {
-                "type": "string"
               }
             }
           }
@@ -1125,75 +189,6 @@ export const lexicons = [
             }
           }
         }
-      }
-    }
-  },
-  {
-    "lexicon": 1,
-    "id": "com.atproto.admin.emitModerationEvent",
-    "defs": {
-      "main": {
-        "type": "procedure",
-        "description": "Take a moderation action on an actor.",
-        "input": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "object",
-            "required": [
-              "event",
-              "subject",
-              "createdBy"
-            ],
-            "properties": {
-              "event": {
-                "type": "union",
-                "refs": [
-                  "com.atproto.admin.defs#modEventTakedown",
-                  "com.atproto.admin.defs#modEventAcknowledge",
-                  "com.atproto.admin.defs#modEventEscalate",
-                  "com.atproto.admin.defs#modEventComment",
-                  "com.atproto.admin.defs#modEventLabel",
-                  "com.atproto.admin.defs#modEventReport",
-                  "com.atproto.admin.defs#modEventMute",
-                  "com.atproto.admin.defs#modEventReverseTakedown",
-                  "com.atproto.admin.defs#modEventUnmute",
-                  "com.atproto.admin.defs#modEventEmail",
-                  "com.atproto.admin.defs#modEventTag"
-                ]
-              },
-              "subject": {
-                "type": "union",
-                "refs": [
-                  "com.atproto.admin.defs#repoRef",
-                  "com.atproto.repo.strongRef"
-                ]
-              },
-              "subjectBlobCids": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "format": "cid"
-                }
-              },
-              "createdBy": {
-                "type": "string",
-                "format": "did"
-              }
-            }
-          }
-        },
-        "output": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "ref",
-            "ref": "com.atproto.admin.defs#modEventView"
-          }
-        },
-        "errors": [
-          {
-            "name": "SubjectHasAction"
-          }
-        ]
       }
     }
   },
@@ -1353,106 +348,6 @@ export const lexicons = [
   },
   {
     "lexicon": 1,
-    "id": "com.atproto.admin.getModerationEvent",
-    "defs": {
-      "main": {
-        "type": "query",
-        "description": "Get details about a moderation event.",
-        "parameters": {
-          "type": "params",
-          "required": [
-            "id"
-          ],
-          "properties": {
-            "id": {
-              "type": "integer"
-            }
-          }
-        },
-        "output": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "ref",
-            "ref": "com.atproto.admin.defs#modEventViewDetail"
-          }
-        }
-      }
-    }
-  },
-  {
-    "lexicon": 1,
-    "id": "com.atproto.admin.getRecord",
-    "defs": {
-      "main": {
-        "type": "query",
-        "description": "Get details about a record.",
-        "parameters": {
-          "type": "params",
-          "required": [
-            "uri"
-          ],
-          "properties": {
-            "uri": {
-              "type": "string",
-              "format": "at-uri"
-            },
-            "cid": {
-              "type": "string",
-              "format": "cid"
-            }
-          }
-        },
-        "output": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "ref",
-            "ref": "com.atproto.admin.defs#recordViewDetail"
-          }
-        },
-        "errors": [
-          {
-            "name": "RecordNotFound"
-          }
-        ]
-      }
-    }
-  },
-  {
-    "lexicon": 1,
-    "id": "com.atproto.admin.getRepo",
-    "defs": {
-      "main": {
-        "type": "query",
-        "description": "Get details about a repository.",
-        "parameters": {
-          "type": "params",
-          "required": [
-            "did"
-          ],
-          "properties": {
-            "did": {
-              "type": "string",
-              "format": "did"
-            }
-          }
-        },
-        "output": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "ref",
-            "ref": "com.atproto.admin.defs#repoViewDetail"
-          }
-        },
-        "errors": [
-          {
-            "name": "RepoNotFound"
-          }
-        ]
-      }
-    }
-  },
-  {
-    "lexicon": 1,
     "id": "com.atproto.admin.getSubjectStatus",
     "defs": {
       "main": {
@@ -1494,6 +389,10 @@ export const lexicons = [
               "takedown": {
                 "type": "ref",
                 "ref": "com.atproto.admin.defs#statusAttr"
+              },
+              "deactivated": {
+                "type": "ref",
+                "ref": "com.atproto.admin.defs#statusAttr"
               }
             }
           }
@@ -1503,131 +402,25 @@ export const lexicons = [
   },
   {
     "lexicon": 1,
-    "id": "com.atproto.admin.listCommunicationTemplates",
+    "id": "com.atproto.admin.searchAccounts",
     "defs": {
       "main": {
         "type": "query",
-        "description": "Get list of all communication templates.",
-        "output": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "object",
-            "required": [
-              "communicationTemplates"
-            ],
-            "properties": {
-              "communicationTemplates": {
-                "type": "array",
-                "items": {
-                  "type": "ref",
-                  "ref": "com.atproto.admin.defs#communicationTemplateView"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  {
-    "lexicon": 1,
-    "id": "com.atproto.admin.queryModerationEvents",
-    "defs": {
-      "main": {
-        "type": "query",
-        "description": "List moderation events related to a subject.",
+        "description": "Get list of accounts that matches your search query.",
         "parameters": {
           "type": "params",
           "properties": {
-            "types": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "The types of events (fully qualified string in the format of com.atproto.admin#modEvent<name>) to filter by. If not specified, all events are returned."
+            "email": {
+              "type": "string"
             },
-            "createdBy": {
-              "type": "string",
-              "format": "did"
-            },
-            "sortDirection": {
-              "type": "string",
-              "default": "desc",
-              "enum": [
-                "asc",
-                "desc"
-              ],
-              "description": "Sort direction for the events. Defaults to descending order of created at timestamp."
-            },
-            "createdAfter": {
-              "type": "string",
-              "format": "datetime",
-              "description": "Retrieve events created after a given timestamp"
-            },
-            "createdBefore": {
-              "type": "string",
-              "format": "datetime",
-              "description": "Retrieve events created before a given timestamp"
-            },
-            "subject": {
-              "type": "string",
-              "format": "uri"
-            },
-            "includeAllUserRecords": {
-              "type": "boolean",
-              "default": false,
-              "description": "If true, events on all record types (posts, lists, profile etc.) owned by the did are returned"
+            "cursor": {
+              "type": "string"
             },
             "limit": {
               "type": "integer",
               "minimum": 1,
               "maximum": 100,
               "default": 50
-            },
-            "hasComment": {
-              "type": "boolean",
-              "description": "If true, only events with comments are returned"
-            },
-            "comment": {
-              "type": "string",
-              "description": "If specified, only events with comments containing the keyword are returned"
-            },
-            "addedLabels": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "If specified, only events where all of these labels were added are returned"
-            },
-            "removedLabels": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "If specified, only events where all of these labels were removed are returned"
-            },
-            "addedTags": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "If specified, only events where all of these tags were added are returned"
-            },
-            "removedTags": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "If specified, only events where all of these tags were removed are returned"
-            },
-            "reportTypes": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "cursor": {
-              "type": "string"
             }
           }
         },
@@ -1636,198 +429,17 @@ export const lexicons = [
           "schema": {
             "type": "object",
             "required": [
-              "events"
+              "accounts"
             ],
             "properties": {
               "cursor": {
                 "type": "string"
               },
-              "events": {
+              "accounts": {
                 "type": "array",
                 "items": {
                   "type": "ref",
-                  "ref": "com.atproto.admin.defs#modEventView"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  {
-    "lexicon": 1,
-    "id": "com.atproto.admin.queryModerationStatuses",
-    "defs": {
-      "main": {
-        "type": "query",
-        "description": "View moderation statuses of subjects (record or repo).",
-        "parameters": {
-          "type": "params",
-          "properties": {
-            "subject": {
-              "type": "string",
-              "format": "uri"
-            },
-            "comment": {
-              "type": "string",
-              "description": "Search subjects by keyword from comments"
-            },
-            "reportedAfter": {
-              "type": "string",
-              "format": "datetime",
-              "description": "Search subjects reported after a given timestamp"
-            },
-            "reportedBefore": {
-              "type": "string",
-              "format": "datetime",
-              "description": "Search subjects reported before a given timestamp"
-            },
-            "reviewedAfter": {
-              "type": "string",
-              "format": "datetime",
-              "description": "Search subjects reviewed after a given timestamp"
-            },
-            "reviewedBefore": {
-              "type": "string",
-              "format": "datetime",
-              "description": "Search subjects reviewed before a given timestamp"
-            },
-            "includeMuted": {
-              "type": "boolean",
-              "description": "By default, we don't include muted subjects in the results. Set this to true to include them."
-            },
-            "reviewState": {
-              "type": "string",
-              "description": "Specify when fetching subjects in a certain state"
-            },
-            "ignoreSubjects": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "uri"
-              }
-            },
-            "lastReviewedBy": {
-              "type": "string",
-              "format": "did",
-              "description": "Get all subject statuses that were reviewed by a specific moderator"
-            },
-            "sortField": {
-              "type": "string",
-              "default": "lastReportedAt",
-              "enum": [
-                "lastReviewedAt",
-                "lastReportedAt"
-              ]
-            },
-            "sortDirection": {
-              "type": "string",
-              "default": "desc",
-              "enum": [
-                "asc",
-                "desc"
-              ]
-            },
-            "takendown": {
-              "type": "boolean",
-              "description": "Get subjects that were taken down"
-            },
-            "appealed": {
-              "type": "boolean",
-              "description": "Get subjects in unresolved appealed status"
-            },
-            "limit": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "default": 50
-            },
-            "tags": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "excludeTags": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "cursor": {
-              "type": "string"
-            }
-          }
-        },
-        "output": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "object",
-            "required": [
-              "subjectStatuses"
-            ],
-            "properties": {
-              "cursor": {
-                "type": "string"
-              },
-              "subjectStatuses": {
-                "type": "array",
-                "items": {
-                  "type": "ref",
-                  "ref": "com.atproto.admin.defs#subjectStatusView"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  {
-    "lexicon": 1,
-    "id": "com.atproto.admin.searchRepos",
-    "defs": {
-      "main": {
-        "type": "query",
-        "description": "Find repositories based on a search term.",
-        "parameters": {
-          "type": "params",
-          "properties": {
-            "term": {
-              "type": "string",
-              "description": "DEPRECATED: use 'q' instead"
-            },
-            "q": {
-              "type": "string"
-            },
-            "limit": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "default": 50
-            },
-            "cursor": {
-              "type": "string"
-            }
-          }
-        },
-        "output": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "object",
-            "required": [
-              "repos"
-            ],
-            "properties": {
-              "cursor": {
-                "type": "string"
-              },
-              "repos": {
-                "type": "array",
-                "items": {
-                  "type": "ref",
-                  "ref": "com.atproto.admin.defs#repoView"
+                  "ref": "com.atproto.admin.defs#accountView"
                 }
               }
             }
@@ -1982,58 +594,6 @@ export const lexicons = [
   },
   {
     "lexicon": 1,
-    "id": "com.atproto.admin.updateCommunicationTemplate",
-    "defs": {
-      "main": {
-        "type": "procedure",
-        "description": "Administrative action to update an existing communication template. Allows passing partial fields to patch specific fields only.",
-        "input": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "object",
-            "required": [
-              "id"
-            ],
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "ID of the template to be updated."
-              },
-              "name": {
-                "type": "string",
-                "description": "Name of the template."
-              },
-              "contentMarkdown": {
-                "type": "string",
-                "description": "Content of the template, markdown supported, can contain variable placeholders."
-              },
-              "subject": {
-                "type": "string",
-                "description": "Subject of the message, used in emails."
-              },
-              "updatedBy": {
-                "type": "string",
-                "format": "did",
-                "description": "DID of the user who is updating the template."
-              },
-              "disabled": {
-                "type": "boolean"
-              }
-            }
-          }
-        },
-        "output": {
-          "encoding": "application/json",
-          "schema": {
-            "type": "ref",
-            "ref": "com.atproto.admin.defs#communicationTemplateView"
-          }
-        }
-      }
-    }
-  },
-  {
-    "lexicon": 1,
     "id": "com.atproto.admin.updateSubjectStatus",
     "defs": {
       "main": {
@@ -2056,6 +616,10 @@ export const lexicons = [
                 ]
               },
               "takedown": {
+                "type": "ref",
+                "ref": "com.atproto.admin.defs#statusAttr"
+              },
+              "deactivated": {
                 "type": "ref",
                 "ref": "com.atproto.admin.defs#statusAttr"
               }
@@ -2292,6 +856,10 @@ export const lexicons = [
           "cts"
         ],
         "properties": {
+          "ver": {
+            "type": "integer",
+            "description": "The AT Protocol version of the label object."
+          },
           "src": {
             "type": "string",
             "format": "did",
@@ -2320,6 +888,15 @@ export const lexicons = [
             "type": "string",
             "format": "datetime",
             "description": "Timestamp when this label was created."
+          },
+          "exp": {
+            "type": "string",
+            "format": "datetime",
+            "description": "Timestamp at which this label expires (no longer applies)."
+          },
+          "sig": {
+            "type": "bytes",
+            "description": "Signature of dag-cbor encoded label."
           }
         }
       },
@@ -2387,6 +964,20 @@ export const lexicons = [
               "media",
               "none"
             ]
+          },
+          "defaultSetting": {
+            "type": "string",
+            "description": "The default setting for this label.",
+            "knownValues": [
+              "ignore",
+              "warn",
+              "hide"
+            ],
+            "default": "warn"
+          },
+          "adultOnly": {
+            "type": "boolean",
+            "description": "Does the user need to have adult content enabled in order to configure this label?"
           },
           "locales": {
             "type": "array",
@@ -2598,6 +1189,8 @@ export const lexicons = [
               },
               "reason": {
                 "type": "string",
+                "maxGraphemes": 2000,
+                "maxLength": 20000,
                 "description": "Additional context about the content and violation."
               },
               "subject": {
@@ -3613,6 +2206,10 @@ export const lexicons = [
               "name": {
                 "type": "string",
                 "description": "A short name for the App Password, to help distinguish them."
+              },
+              "privileged": {
+                "type": "boolean",
+                "description": "If an app password has 'privileged' access to possibly sensitive account state. Meant for use with trusted clients."
               }
             }
           }
@@ -3647,6 +2244,9 @@ export const lexicons = [
           "createdAt": {
             "type": "string",
             "format": "datetime"
+          },
+          "privileged": {
+            "type": "boolean"
           }
         }
       }
@@ -3788,6 +2388,9 @@ export const lexicons = [
               },
               "password": {
                 "type": "string"
+              },
+              "authFactorToken": {
+                "type": "string"
               }
             }
           }
@@ -3825,6 +2428,21 @@ export const lexicons = [
               },
               "emailConfirmed": {
                 "type": "boolean"
+              },
+              "emailAuthFactor": {
+                "type": "boolean"
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "string",
+                "description": "If active=false, this optional field indicates a possible reason for why the account is not active. If active=false and no status is supplied, then the host makes no claim for why the repository is no longer being hosted.",
+                "knownValues": [
+                  "takendown",
+                  "suspended",
+                  "deactivated"
+                ]
               }
             }
           }
@@ -3832,6 +2450,9 @@ export const lexicons = [
         "errors": [
           {
             "name": "AccountTakedown"
+          },
+          {
+            "name": "AuthFactorTokenRequired"
           }
         ]
       }
@@ -4010,6 +2631,11 @@ export const lexicons = [
                 "description": "URLs of service policy documents.",
                 "ref": "#links"
               },
+              "contact": {
+                "type": "ref",
+                "description": "Contact information",
+                "ref": "#contact"
+              },
               "did": {
                 "type": "string",
                 "format": "did"
@@ -4022,9 +2648,19 @@ export const lexicons = [
         "type": "object",
         "properties": {
           "privacyPolicy": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           },
           "termsOfService": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "contact": {
+        "type": "object",
+        "properties": {
+          "email": {
             "type": "string"
           }
         }
@@ -4145,8 +2781,23 @@ export const lexicons = [
               "emailConfirmed": {
                 "type": "boolean"
               },
+              "emailAuthFactor": {
+                "type": "boolean"
+              },
               "didDoc": {
                 "type": "unknown"
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "string",
+                "description": "If active=false, this optional field indicates a possible reason for why the account is not active. If active=false and no status is supplied, then the host makes no claim for why the repository is no longer being hosted.",
+                "knownValues": [
+                  "takendown",
+                  "suspended",
+                  "deactivated"
+                ]
               }
             }
           }
@@ -4198,6 +2849,9 @@ export const lexicons = [
           "createdAt": {
             "type": "string",
             "format": "datetime"
+          },
+          "privileged": {
+            "type": "boolean"
           }
         }
       }
@@ -4237,6 +2891,18 @@ export const lexicons = [
               },
               "didDoc": {
                 "type": "unknown"
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "string",
+                "description": "Hosting status of the account. If not specified, then assume 'active'.",
+                "knownValues": [
+                  "takendown",
+                  "suspended",
+                  "deactivated"
+                ]
               }
             }
           }
@@ -4433,6 +3099,9 @@ export const lexicons = [
               "email": {
                 "type": "string"
               },
+              "emailAuthFactor": {
+                "type": "boolean"
+              },
               "token": {
                 "type": "string",
                 "description": "Requires a token from com.atproto.sever.requestEmailUpdate if the account's email has been confirmed."
@@ -4482,7 +3151,24 @@ export const lexicons = [
         },
         "output": {
           "encoding": "*/*"
-        }
+        },
+        "errors": [
+          {
+            "name": "BlobNotFound"
+          },
+          {
+            "name": "RepoNotFound"
+          },
+          {
+            "name": "RepoTakendown"
+          },
+          {
+            "name": "RepoSuspended"
+          },
+          {
+            "name": "RepoDeactivated"
+          }
+        ]
       }
     }
   },
@@ -4516,7 +3202,24 @@ export const lexicons = [
         },
         "output": {
           "encoding": "application/vnd.ipld.car"
-        }
+        },
+        "errors": [
+          {
+            "name": "BlockNotFound"
+          },
+          {
+            "name": "RepoNotFound"
+          },
+          {
+            "name": "RepoTakendown"
+          },
+          {
+            "name": "RepoSuspended"
+          },
+          {
+            "name": "RepoDeactivated"
+          }
+        ]
       }
     }
   },
@@ -4631,6 +3334,15 @@ export const lexicons = [
         "errors": [
           {
             "name": "RepoNotFound"
+          },
+          {
+            "name": "RepoTakendown"
+          },
+          {
+            "name": "RepoSuspended"
+          },
+          {
+            "name": "RepoDeactivated"
           }
         ]
       }
@@ -4667,13 +3379,30 @@ export const lexicons = [
             "commit": {
               "type": "string",
               "format": "cid",
-              "description": "An optional past commit CID."
+              "description": "DEPRECATED: referenced a repo commit by CID, and retrieved record as of that commit"
             }
           }
         },
         "output": {
           "encoding": "application/vnd.ipld.car"
-        }
+        },
+        "errors": [
+          {
+            "name": "RecordNotFound"
+          },
+          {
+            "name": "RepoNotFound"
+          },
+          {
+            "name": "RepoTakendown"
+          },
+          {
+            "name": "RepoSuspended"
+          },
+          {
+            "name": "RepoDeactivated"
+          }
+        ]
       }
     }
   },
@@ -4703,7 +3432,81 @@ export const lexicons = [
         },
         "output": {
           "encoding": "application/vnd.ipld.car"
-        }
+        },
+        "errors": [
+          {
+            "name": "RepoNotFound"
+          },
+          {
+            "name": "RepoTakendown"
+          },
+          {
+            "name": "RepoSuspended"
+          },
+          {
+            "name": "RepoDeactivated"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "com.atproto.sync.getRepoStatus",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Get the hosting status for a repository, on this server. Expected to be implemented by PDS and Relay.",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "did"
+          ],
+          "properties": {
+            "did": {
+              "type": "string",
+              "format": "did",
+              "description": "The DID of the repo."
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "did",
+              "active"
+            ],
+            "properties": {
+              "did": {
+                "type": "string",
+                "format": "did"
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "string",
+                "description": "If active=false, this optional field indicates a possible reason for why the account is not active. If active=false and no status is supplied, then the host makes no claim for why the repository is no longer being hosted.",
+                "knownValues": [
+                  "takendown",
+                  "suspended",
+                  "deactivated"
+                ]
+              },
+              "rev": {
+                "type": "string",
+                "description": "Optional field, the current rev of the repo, if active=true"
+              }
+            }
+          }
+        },
+        "errors": [
+          {
+            "name": "RepoNotFound"
+          }
+        ]
       }
     }
   },
@@ -4713,7 +3516,7 @@ export const lexicons = [
     "defs": {
       "main": {
         "type": "query",
-        "description": "List blob CIDso for an account, since some repo revision. Does not require auth; implemented by PDS.",
+        "description": "List blob CIDs for an account, since some repo revision. Does not require auth; implemented by PDS.",
         "parameters": {
           "type": "params",
           "required": [
@@ -4760,7 +3563,21 @@ export const lexicons = [
               }
             }
           }
-        }
+        },
+        "errors": [
+          {
+            "name": "RepoNotFound"
+          },
+          {
+            "name": "RepoTakendown"
+          },
+          {
+            "name": "RepoSuspended"
+          },
+          {
+            "name": "RepoDeactivated"
+          }
+        ]
       }
     }
   },
@@ -4826,6 +3643,18 @@ export const lexicons = [
           },
           "rev": {
             "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "description": "If active=false, this optional field indicates a possible reason for why the account is not active. If active=false and no status is supplied, then the host makes no claim for why the repository is no longer being hosted.",
+            "knownValues": [
+              "takendown",
+              "suspended",
+              "deactivated"
+            ]
           }
         }
       }
@@ -4903,6 +3732,7 @@ export const lexicons = [
             "refs": [
               "#commit",
               "#identity",
+              "#account",
               "#handle",
               "#migrate",
               "#tombstone",
@@ -5021,12 +3851,54 @@ export const lexicons = [
           "time": {
             "type": "string",
             "format": "datetime"
+          },
+          "handle": {
+            "type": "string",
+            "format": "handle",
+            "description": "The current handle for the account, or 'handle.invalid' if validation fails. This field is optional, might have been validated or passed-through from an upstream source. Semantics and behaviors for PDS vs Relay may evolve in the future; see atproto specs for more details."
+          }
+        }
+      },
+      "account": {
+        "type": "object",
+        "description": "Represents a change to an account's status on a host (eg, PDS or Relay). The semantics of this event are that the status is at the host which emitted the event, not necessarily that at the currently active PDS. Eg, a Relay takedown would emit a takedown with active=false, even if the PDS is still active.",
+        "required": [
+          "seq",
+          "did",
+          "time",
+          "active"
+        ],
+        "properties": {
+          "seq": {
+            "type": "integer"
+          },
+          "did": {
+            "type": "string",
+            "format": "did"
+          },
+          "time": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Indicates that the account has a repository which can be fetched from the host that emitted this event."
+          },
+          "status": {
+            "type": "string",
+            "description": "If active=false, this optional field indicates a reason for why the account is not active.",
+            "knownValues": [
+              "takendown",
+              "suspended",
+              "deleted",
+              "deactivated"
+            ]
           }
         }
       },
       "handle": {
         "type": "object",
-        "description": "Represents an update of the account's handle, or transition to/from invalid state. NOTE: Will be deprecated in favor of #identity.",
+        "description": "DEPRECATED -- Use #identity event instead",
         "required": [
           "seq",
           "did",
@@ -5053,7 +3925,7 @@ export const lexicons = [
       },
       "migrate": {
         "type": "object",
-        "description": "Represents an account moving from one PDS instance to another. NOTE: not implemented; account migration uses #identity instead",
+        "description": "DEPRECATED -- Use #account event instead",
         "required": [
           "seq",
           "did",
@@ -5082,7 +3954,7 @@ export const lexicons = [
       },
       "tombstone": {
         "type": "object",
-        "description": "Indicates that an account has been deleted. NOTE: may be deprecated in favor of #identity or a future #account event",
+        "description": "DEPRECATED -- Use #account event instead",
         "required": [
           "seq",
           "did",
@@ -5271,7 +4143,12 @@ export const lexicons = [
             "maxLength": 640
           },
           "avatar": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
+          },
+          "associated": {
+            "type": "ref",
+            "ref": "#profileAssociated"
           },
           "viewer": {
             "type": "ref",
@@ -5283,6 +4160,10 @@ export const lexicons = [
               "type": "ref",
               "ref": "com.atproto.label.defs#label"
             }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
           }
         }
       },
@@ -5312,9 +4193,18 @@ export const lexicons = [
             "maxLength": 2560
           },
           "avatar": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
+          },
+          "associated": {
+            "type": "ref",
+            "ref": "#profileAssociated"
           },
           "indexedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "createdAt": {
             "type": "string",
             "format": "datetime"
           },
@@ -5357,10 +4247,12 @@ export const lexicons = [
             "maxLength": 2560
           },
           "avatar": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           },
           "banner": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           },
           "followersCount": {
             "type": "integer"
@@ -5375,7 +4267,15 @@ export const lexicons = [
             "type": "ref",
             "ref": "#profileAssociated"
           },
+          "joinedViaStarterPack": {
+            "type": "ref",
+            "ref": "app.bsky.graph.defs#starterPackViewBasic"
+          },
           "indexedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "createdAt": {
             "type": "string",
             "format": "datetime"
           },
@@ -5401,8 +4301,31 @@ export const lexicons = [
           "feedgens": {
             "type": "integer"
           },
+          "starterPacks": {
+            "type": "integer"
+          },
           "labeler": {
             "type": "boolean"
+          },
+          "chat": {
+            "type": "ref",
+            "ref": "#profileAssociatedChat"
+          }
+        }
+      },
+      "profileAssociatedChat": {
+        "type": "object",
+        "required": [
+          "allowIncoming"
+        ],
+        "properties": {
+          "allowIncoming": {
+            "type": "string",
+            "knownValues": [
+              "all",
+              "none",
+              "following"
+            ]
           }
         }
       },
@@ -5435,6 +4358,32 @@ export const lexicons = [
           "followedBy": {
             "type": "string",
             "format": "at-uri"
+          },
+          "knownFollowers": {
+            "type": "ref",
+            "ref": "#knownFollowers"
+          }
+        }
+      },
+      "knownFollowers": {
+        "type": "object",
+        "description": "The subject's followers whom you also follow",
+        "required": [
+          "count",
+          "followers"
+        ],
+        "properties": {
+          "count": {
+            "type": "integer"
+          },
+          "followers": {
+            "type": "array",
+            "minLength": 0,
+            "maxLength": 5,
+            "items": {
+              "type": "ref",
+              "ref": "#profileViewBasic"
+            }
           }
         }
       },
@@ -5446,12 +4395,15 @@ export const lexicons = [
             "#adultContentPref",
             "#contentLabelPref",
             "#savedFeedsPref",
+            "#savedFeedsPrefV2",
             "#personalDetailsPref",
             "#feedViewPref",
             "#threadViewPref",
             "#interestsPref",
             "#mutedWordsPref",
-            "#hiddenPostsPref"
+            "#hiddenPostsPref",
+            "#bskyAppStatePref",
+            "#labelersPref"
           ]
         }
       },
@@ -5490,6 +4442,49 @@ export const lexicons = [
               "warn",
               "hide"
             ]
+          }
+        }
+      },
+      "savedFeed": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "value",
+          "pinned"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "knownValues": [
+              "feed",
+              "list",
+              "timeline"
+            ]
+          },
+          "value": {
+            "type": "string"
+          },
+          "pinned": {
+            "type": "boolean"
+          }
+        }
+      },
+      "savedFeedsPrefV2": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "app.bsky.actor.defs#savedFeed"
+            }
           }
         }
       },
@@ -5664,22 +4659,22 @@ export const lexicons = [
           }
         }
       },
-      "modsPref": {
+      "labelersPref": {
         "type": "object",
         "required": [
-          "mods"
+          "labelers"
         ],
         "properties": {
-          "mods": {
+          "labelers": {
             "type": "array",
             "items": {
               "type": "ref",
-              "ref": "#modPrefItem"
+              "ref": "#labelerPrefItem"
             }
           }
         }
       },
-      "modPrefItem": {
+      "labelerPrefItem": {
         "type": "object",
         "required": [
           "did"
@@ -5688,6 +4683,38 @@ export const lexicons = [
           "did": {
             "type": "string",
             "format": "did"
+          }
+        }
+      },
+      "bskyAppStatePref": {
+        "description": "A grab bag of state that's specific to the bsky.app program. Third-party apps shouldn't use this.",
+        "type": "object",
+        "properties": {
+          "activeProgressGuide": {
+            "type": "ref",
+            "ref": "#bskyAppProgressGuide"
+          },
+          "queuedNudges": {
+            "description": "An array of tokens which identify nudges (modals, popups, tours, highlight dots) that should be shown to the user.",
+            "type": "array",
+            "maxLength": 1000,
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            }
+          }
+        }
+      },
+      "bskyAppProgressGuide": {
+        "description": "If set, an active progress guide. Once completed, can be set to undefined. Should have unspecced fields tracking progress.",
+        "type": "object",
+        "required": [
+          "guide"
+        ],
+        "properties": {
+          "guide": {
+            "type": "string",
+            "maxLength": 100
           }
         }
       }
@@ -5887,6 +4914,14 @@ export const lexicons = [
               "refs": [
                 "com.atproto.label.defs#selfLabels"
               ]
+            },
+            "joinedViaStarterPack": {
+              "type": "ref",
+              "ref": "com.atproto.repo.strongRef"
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "datetime"
             }
           }
         }
@@ -6093,7 +5128,8 @@ export const lexicons = [
             "type": "string"
           },
           "thumb": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           }
         }
       }
@@ -6188,10 +5224,12 @@ export const lexicons = [
         "properties": {
           "thumb": {
             "type": "string",
+            "format": "uri",
             "description": "Fully-qualified URL where a thumbnail of the image can be fetched. For example, CDN location provided by the App View."
           },
           "fullsize": {
             "type": "string",
+            "format": "uri",
             "description": "Fully-qualified URL where a large version of the image can be fetched. May or may not be the exact original blob. For example, CDN location provided by the App View."
           },
           "alt": {
@@ -6237,7 +5275,8 @@ export const lexicons = [
               "#viewBlocked",
               "app.bsky.feed.defs#generatorView",
               "app.bsky.graph.defs#listView",
-              "app.bsky.labeler.defs#labelerView"
+              "app.bsky.labeler.defs#labelerView",
+              "app.bsky.graph.defs#starterPackViewBasic"
             ]
           }
         }
@@ -6274,6 +5313,15 @@ export const lexicons = [
               "type": "ref",
               "ref": "com.atproto.label.defs#label"
             }
+          },
+          "replyCount": {
+            "type": "integer"
+          },
+          "repostCount": {
+            "type": "integer"
+          },
+          "likeCount": {
+            "type": "integer"
           },
           "embeds": {
             "type": "array",
@@ -6461,6 +5509,9 @@ export const lexicons = [
             "type": "string",
             "format": "at-uri"
           },
+          "threadMuted": {
+            "type": "boolean"
+          },
           "replyDisabled": {
             "type": "boolean"
           }
@@ -6485,6 +5536,11 @@ export const lexicons = [
             "refs": [
               "#reasonRepost"
             ]
+          },
+          "feedContext": {
+            "type": "string",
+            "description": "Context provided by feed generator that may be passed back alongside interactions.",
+            "maxLength": 2000
           }
         }
       },
@@ -6510,6 +5566,11 @@ export const lexicons = [
               "#notFoundPost",
               "#blockedPost"
             ]
+          },
+          "grandparentAuthor": {
+            "type": "ref",
+            "ref": "app.bsky.actor.defs#profileViewBasic",
+            "description": "When parent is a reply to another post, this is the author of that post."
           }
         }
       },
@@ -6659,11 +5720,22 @@ export const lexicons = [
             }
           },
           "avatar": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           },
           "likeCount": {
             "type": "integer",
             "minimum": 0
+          },
+          "acceptsInteractions": {
+            "type": "boolean"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "com.atproto.label.defs#label"
+            }
           },
           "viewer": {
             "type": "ref",
@@ -6699,6 +5771,11 @@ export const lexicons = [
             "refs": [
               "#skeletonReasonRepost"
             ]
+          },
+          "feedContext": {
+            "type": "string",
+            "description": "Context that will be passed through to client and may be passed to feed generator back alongside interactions.",
+            "maxLength": 2000
           }
         }
       },
@@ -6736,6 +5813,85 @@ export const lexicons = [
             }
           }
         }
+      },
+      "interaction": {
+        "type": "object",
+        "properties": {
+          "item": {
+            "type": "string",
+            "format": "at-uri"
+          },
+          "event": {
+            "type": "string",
+            "knownValues": [
+              "app.bsky.feed.defs#requestLess",
+              "app.bsky.feed.defs#requestMore",
+              "app.bsky.feed.defs#clickthroughItem",
+              "app.bsky.feed.defs#clickthroughAuthor",
+              "app.bsky.feed.defs#clickthroughReposter",
+              "app.bsky.feed.defs#clickthroughEmbed",
+              "app.bsky.feed.defs#interactionSeen",
+              "app.bsky.feed.defs#interactionLike",
+              "app.bsky.feed.defs#interactionRepost",
+              "app.bsky.feed.defs#interactionReply",
+              "app.bsky.feed.defs#interactionQuote",
+              "app.bsky.feed.defs#interactionShare"
+            ]
+          },
+          "feedContext": {
+            "type": "string",
+            "description": "Context on a feed item that was orginally supplied by the feed generator on getFeedSkeleton.",
+            "maxLength": 2000
+          }
+        }
+      },
+      "requestLess": {
+        "type": "token",
+        "description": "Request that less content like the given feed item be shown in the feed"
+      },
+      "requestMore": {
+        "type": "token",
+        "description": "Request that more content like the given feed item be shown in the feed"
+      },
+      "clickthroughItem": {
+        "type": "token",
+        "description": "User clicked through to the feed item"
+      },
+      "clickthroughAuthor": {
+        "type": "token",
+        "description": "User clicked through to the author of the feed item"
+      },
+      "clickthroughReposter": {
+        "type": "token",
+        "description": "User clicked through to the reposter of the feed item"
+      },
+      "clickthroughEmbed": {
+        "type": "token",
+        "description": "User clicked through to the embedded content of the feed item"
+      },
+      "interactionSeen": {
+        "type": "token",
+        "description": "Feed item was seen by user"
+      },
+      "interactionLike": {
+        "type": "token",
+        "description": "User liked the feed item"
+      },
+      "interactionRepost": {
+        "type": "token",
+        "description": "User reposted the feed item"
+      },
+      "interactionReply": {
+        "type": "token",
+        "description": "User replied to the feed item"
+      },
+      "interactionQuote": {
+        "type": "token",
+        "description": "User quoted the feed item"
+      },
+      "interactionShare": {
+        "type": "token",
+        "description": "User shared the feed item"
       }
     }
   },
@@ -6843,6 +5999,10 @@ export const lexicons = [
                 "image/jpeg"
               ],
               "maxSize": 1000000
+            },
+            "acceptsInteractions": {
+              "type": "boolean",
+              "description": "Declaration that a feed accepts feedback interactions from a client through app.bsky.feed.sendInteractions"
             },
             "labels": {
               "type": "union",
@@ -7879,6 +7039,56 @@ export const lexicons = [
               "type": "string",
               "description": "Search query string; syntax, phrase, boolean, and faceting is unspecified, but Lucene query syntax is recommended."
             },
+            "sort": {
+              "type": "string",
+              "knownValues": [
+                "top",
+                "latest"
+              ],
+              "default": "latest",
+              "description": "Specifies the ranking order of results."
+            },
+            "since": {
+              "type": "string",
+              "description": "Filter results for posts after the indicated datetime (inclusive). Expected to use 'sortAt' timestamp, which may not match 'createdAt'. Can be a datetime, or just an ISO date (YYYY-MM-DD)."
+            },
+            "until": {
+              "type": "string",
+              "description": "Filter results for posts before the indicated datetime (not inclusive). Expected to use 'sortAt' timestamp, which may not match 'createdAt'. Can be a datetime, or just an ISO date (YYY-MM-DD)."
+            },
+            "mentions": {
+              "type": "string",
+              "format": "at-identifier",
+              "description": "Filter to posts which mention the given account. Handles are resolved to DID before query-time. Only matches rich-text facet mentions."
+            },
+            "author": {
+              "type": "string",
+              "format": "at-identifier",
+              "description": "Filter to posts by the given account. Handles are resolved to DID before query-time."
+            },
+            "lang": {
+              "type": "string",
+              "format": "language",
+              "description": "Filter to posts in the given language. Expected to be based on post language field, though server may override language detection."
+            },
+            "domain": {
+              "type": "string",
+              "description": "Filter to posts with URLs (facet links or embeds) linking to the given domain (hostname). Server may apply hostname normalization."
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Filter to posts with links (facet links or embeds) pointing to this URL. Server may apply URL normalization or fuzzy matching."
+            },
+            "tag": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 640,
+                "maxGraphemes": 64
+              },
+              "description": "Filter to posts with the given tag (hashtag), based on rich-text facet or tag field. Do not include the hash (#) prefix. Multiple tags can be specified, with 'AND' matching."
+            },
             "limit": {
               "type": "integer",
               "minimum": 1,
@@ -7921,6 +7131,41 @@ export const lexicons = [
             "name": "BadQueryString"
           }
         ]
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.bsky.feed.sendInteractions",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "description": "Send information about interactions with feed items back to the feed generator that served them.",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "interactions"
+            ],
+            "properties": {
+              "interactions": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "app.bsky.feed.defs#interaction"
+                }
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "properties": {}
+          }
+        }
       }
     }
   },
@@ -8048,7 +7293,19 @@ export const lexicons = [
             "ref": "#listPurpose"
           },
           "avatar": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
+          },
+          "listItemCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "com.atproto.label.defs#label"
+            }
           },
           "viewer": {
             "type": "ref",
@@ -8105,7 +7362,19 @@ export const lexicons = [
             }
           },
           "avatar": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
+          },
+          "listItemCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "com.atproto.label.defs#label"
+            }
           },
           "viewer": {
             "type": "ref",
@@ -8134,11 +7403,128 @@ export const lexicons = [
           }
         }
       },
+      "starterPackView": {
+        "type": "object",
+        "required": [
+          "uri",
+          "cid",
+          "record",
+          "creator",
+          "indexedAt"
+        ],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri"
+          },
+          "cid": {
+            "type": "string",
+            "format": "cid"
+          },
+          "record": {
+            "type": "unknown"
+          },
+          "creator": {
+            "type": "ref",
+            "ref": "app.bsky.actor.defs#profileViewBasic"
+          },
+          "list": {
+            "type": "ref",
+            "ref": "#listViewBasic"
+          },
+          "listItemsSample": {
+            "type": "array",
+            "maxLength": 12,
+            "items": {
+              "type": "ref",
+              "ref": "#listItemView"
+            }
+          },
+          "feeds": {
+            "type": "array",
+            "maxLength": 3,
+            "items": {
+              "type": "ref",
+              "ref": "app.bsky.feed.defs#generatorView"
+            }
+          },
+          "joinedWeekCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "joinedAllTimeCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "com.atproto.label.defs#label"
+            }
+          },
+          "indexedAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      },
+      "starterPackViewBasic": {
+        "type": "object",
+        "required": [
+          "uri",
+          "cid",
+          "record",
+          "creator",
+          "indexedAt"
+        ],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri"
+          },
+          "cid": {
+            "type": "string",
+            "format": "cid"
+          },
+          "record": {
+            "type": "unknown"
+          },
+          "creator": {
+            "type": "ref",
+            "ref": "app.bsky.actor.defs#profileViewBasic"
+          },
+          "listItemCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "joinedWeekCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "joinedAllTimeCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "com.atproto.label.defs#label"
+            }
+          },
+          "indexedAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      },
       "listPurpose": {
         "type": "string",
         "knownValues": [
           "app.bsky.graph.defs#modlist",
-          "app.bsky.graph.defs#curatelist"
+          "app.bsky.graph.defs#curatelist",
+          "app.bsky.graph.defs#referencelist"
         ]
       },
       "modlist": {
@@ -8148,6 +7534,10 @@ export const lexicons = [
       "curatelist": {
         "type": "token",
         "description": "A list of actors used for curation purposes such as list feeds or interaction gating."
+      },
+      "referencelist": {
+        "type": "token",
+        "description": "A list of actors used for only for reference purposes such as within a starter pack."
       },
       "listViewerState": {
         "type": "object",
@@ -8226,6 +7616,58 @@ export const lexicons = [
             "createdAt": {
               "type": "string",
               "format": "datetime"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.bsky.graph.getActorStarterPacks",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Get a list of starter packs created by the actor.",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "actor"
+          ],
+          "properties": {
+            "actor": {
+              "type": "string",
+              "format": "at-identifier"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "starterPacks"
+            ],
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "starterPacks": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "app.bsky.graph.defs#starterPackViewBasic"
+                }
+              }
             }
           }
         }
@@ -8379,6 +7821,63 @@ export const lexicons = [
                 "type": "string"
               },
               "follows": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "app.bsky.actor.defs#profileView"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.bsky.graph.getKnownFollowers",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Enumerates accounts which follow a specified account (actor) and are followed by the viewer.",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "actor"
+          ],
+          "properties": {
+            "actor": {
+              "type": "string",
+              "format": "at-identifier"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "subject",
+              "followers"
+            ],
+            "properties": {
+              "subject": {
+                "type": "ref",
+                "ref": "app.bsky.actor.defs#profileView"
+              },
+              "cursor": {
+                "type": "string"
+              },
+              "followers": {
                 "type": "array",
                 "items": {
                   "type": "ref",
@@ -8702,6 +8201,88 @@ export const lexicons = [
   },
   {
     "lexicon": 1,
+    "id": "app.bsky.graph.getStarterPack",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Gets a view of a starter pack.",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "starterPack"
+          ],
+          "properties": {
+            "starterPack": {
+              "type": "string",
+              "format": "at-uri",
+              "description": "Reference (AT-URI) of the starter pack record."
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "starterPack"
+            ],
+            "properties": {
+              "starterPack": {
+                "type": "ref",
+                "ref": "app.bsky.graph.defs#starterPackView"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.bsky.graph.getStarterPacks",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Get views for a list of starter packs.",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "uris"
+          ],
+          "properties": {
+            "uris": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "at-uri"
+              },
+              "maxLength": 25
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "starterPacks"
+            ],
+            "properties": {
+              "starterPacks": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "app.bsky.graph.defs#starterPackViewBasic"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
     "id": "app.bsky.graph.getSuggestedFollowsByActor",
     "defs": {
       "main": {
@@ -8918,6 +8499,100 @@ export const lexicons = [
   },
   {
     "lexicon": 1,
+    "id": "app.bsky.graph.muteThread",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "description": "Mutes a thread preventing notifications from the thread and any of its children. Mutes are private in Bluesky. Requires auth.",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "root"
+            ],
+            "properties": {
+              "root": {
+                "type": "string",
+                "format": "at-uri"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.bsky.graph.starterpack",
+    "defs": {
+      "main": {
+        "type": "record",
+        "description": "Record defining a starter pack of actors and feeds for new users.",
+        "key": "tid",
+        "record": {
+          "type": "object",
+          "required": [
+            "name",
+            "list",
+            "createdAt"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxGraphemes": 50,
+              "maxLength": 500,
+              "minLength": 1,
+              "description": "Display name for starter pack; can not be empty."
+            },
+            "description": {
+              "type": "string",
+              "maxGraphemes": 300,
+              "maxLength": 3000
+            },
+            "descriptionFacets": {
+              "type": "array",
+              "items": {
+                "type": "ref",
+                "ref": "app.bsky.richtext.facet"
+              }
+            },
+            "list": {
+              "type": "string",
+              "format": "at-uri",
+              "description": "Reference (AT-URI) to the list record."
+            },
+            "feeds": {
+              "type": "array",
+              "maxLength": 3,
+              "items": {
+                "type": "ref",
+                "ref": "#feedItem"
+              }
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "datetime"
+            }
+          }
+        }
+      },
+      "feedItem": {
+        "type": "object",
+        "required": [
+          "uri"
+        ],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
     "id": "app.bsky.graph.unmuteActor",
     "defs": {
       "main": {
@@ -8957,6 +8632,31 @@ export const lexicons = [
             ],
             "properties": {
               "list": {
+                "type": "string",
+                "format": "at-uri"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.bsky.graph.unmuteThread",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "description": "Unmutes the specified thread. Requires auth.",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "root"
+            ],
+            "properties": {
+              "root": {
                 "type": "string",
                 "format": "at-uri"
               }
@@ -9188,6 +8888,9 @@ export const lexicons = [
         "parameters": {
           "type": "params",
           "properties": {
+            "priority": {
+              "type": "boolean"
+            },
             "seenAt": {
               "type": "string",
               "format": "datetime"
@@ -9227,6 +8930,9 @@ export const lexicons = [
               "maximum": 100,
               "default": 50
             },
+            "priority": {
+              "type": "boolean"
+            },
             "cursor": {
               "type": "string"
             },
@@ -9253,6 +8959,9 @@ export const lexicons = [
                   "type": "ref",
                   "ref": "#notification"
                 }
+              },
+              "priority": {
+                "type": "boolean"
               },
               "seenAt": {
                 "type": "string",
@@ -9288,14 +8997,15 @@ export const lexicons = [
           },
           "reason": {
             "type": "string",
-            "description": "Expected values are 'like', 'repost', 'follow', 'mention', 'reply', and 'quote'.",
+            "description": "Expected values are 'like', 'repost', 'follow', 'mention', 'reply', 'quote', and 'starterpack-joined'.",
             "knownValues": [
               "like",
               "repost",
               "follow",
               "mention",
               "reply",
-              "quote"
+              "quote",
+              "starterpack-joined"
             ]
           },
           "reasonSubject": {
@@ -9317,6 +9027,30 @@ export const lexicons = [
             "items": {
               "type": "ref",
               "ref": "com.atproto.label.defs#label"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.bsky.notification.putPreferences",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "description": "Set notification-related preferences for an account. Requires auth.",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "priority"
+            ],
+            "properties": {
+              "priority": {
+                "type": "boolean"
+              }
             }
           }
         }
@@ -9559,6 +9293,61 @@ export const lexicons = [
   },
   {
     "lexicon": 1,
+    "id": "app.bsky.unspecced.getSuggestionsSkeleton",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Get a skeleton of suggested actors. Intended to be called and then hydrated through app.bsky.actor.getSuggestions",
+        "parameters": {
+          "type": "params",
+          "properties": {
+            "viewer": {
+              "type": "string",
+              "format": "did",
+              "description": "DID of the account making the request (not included for public/unauthenticated queries). Used to boost followed accounts in ranking."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "cursor": {
+              "type": "string"
+            },
+            "relativeToDid": {
+              "type": "string",
+              "format": "did",
+              "description": "DID of the account to get suggestions relative to. If not provided, suggestions will be based on the viewer."
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "actors"
+            ],
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "actors": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "app.bsky.unspecced.defs#skeletonSearchActor"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
     "id": "app.bsky.unspecced.getTaggedSuggestions",
     "defs": {
       "main": {
@@ -9630,6 +9419,11 @@ export const lexicons = [
               "type": "string",
               "description": "Search query string; syntax, phrase, boolean, and faceting is unspecified, but Lucene query syntax is recommended. For typeahead search, only simple term match is supported, not full syntax."
             },
+            "viewer": {
+              "type": "string",
+              "format": "did",
+              "description": "DID of the account making the request (not included for public/unauthenticated queries). Used to boost followed accounts in ranking."
+            },
             "typeahead": {
               "type": "boolean",
               "description": "If true, acts as fast/simple 'typeahead' query."
@@ -9696,6 +9490,61 @@ export const lexicons = [
               "type": "string",
               "description": "Search query string; syntax, phrase, boolean, and faceting is unspecified, but Lucene query syntax is recommended."
             },
+            "sort": {
+              "type": "string",
+              "knownValues": [
+                "top",
+                "latest"
+              ],
+              "default": "latest",
+              "description": "Specifies the ranking order of results."
+            },
+            "since": {
+              "type": "string",
+              "description": "Filter results for posts after the indicated datetime (inclusive). Expected to use 'sortAt' timestamp, which may not match 'createdAt'. Can be a datetime, or just an ISO date (YYYY-MM-DD)."
+            },
+            "until": {
+              "type": "string",
+              "description": "Filter results for posts before the indicated datetime (not inclusive). Expected to use 'sortAt' timestamp, which may not match 'createdAt'. Can be a datetime, or just an ISO date (YYY-MM-DD)."
+            },
+            "mentions": {
+              "type": "string",
+              "format": "at-identifier",
+              "description": "Filter to posts which mention the given account. Handles are resolved to DID before query-time. Only matches rich-text facet mentions."
+            },
+            "author": {
+              "type": "string",
+              "format": "at-identifier",
+              "description": "Filter to posts by the given account. Handles are resolved to DID before query-time."
+            },
+            "lang": {
+              "type": "string",
+              "format": "language",
+              "description": "Filter to posts in the given language. Expected to be based on post language field, though server may override language detection."
+            },
+            "domain": {
+              "type": "string",
+              "description": "Filter to posts with URLs (facet links or embeds) linking to the given domain (hostname). Server may apply hostname normalization."
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Filter to posts with links (facet links or embeds) pointing to this URL. Server may apply URL normalization or fuzzy matching."
+            },
+            "tag": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 640,
+                "maxGraphemes": 64
+              },
+              "description": "Filter to posts with the given tag (hashtag), based on rich-text facet or tag field. Do not include the hash (#) prefix. Multiple tags can be specified, with 'AND' matching."
+            },
+            "viewer": {
+              "type": "string",
+              "format": "did",
+              "description": "DID of the account making the request (not included for public/unauthenticated queries). Used for 'from:me' queries."
+            },
             "limit": {
               "type": "integer",
               "minimum": 1,
@@ -9736,6 +9585,2791 @@ export const lexicons = [
         "errors": [
           {
             "name": "BadQueryString"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.actor.declaration",
+    "defs": {
+      "main": {
+        "type": "record",
+        "description": "A declaration of a Bluesky chat account.",
+        "key": "literal:self",
+        "record": {
+          "type": "object",
+          "required": [
+            "allowIncoming"
+          ],
+          "properties": {
+            "allowIncoming": {
+              "type": "string",
+              "knownValues": [
+                "all",
+                "none",
+                "following"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.actor.defs",
+    "defs": {
+      "profileViewBasic": {
+        "type": "object",
+        "required": [
+          "did",
+          "handle"
+        ],
+        "properties": {
+          "did": {
+            "type": "string",
+            "format": "did"
+          },
+          "handle": {
+            "type": "string",
+            "format": "handle"
+          },
+          "displayName": {
+            "type": "string",
+            "maxGraphemes": 64,
+            "maxLength": 640
+          },
+          "avatar": {
+            "type": "string",
+            "format": "uri"
+          },
+          "associated": {
+            "type": "ref",
+            "ref": "app.bsky.actor.defs#profileAssociated"
+          },
+          "viewer": {
+            "type": "ref",
+            "ref": "app.bsky.actor.defs#viewerState"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "com.atproto.label.defs#label"
+            }
+          },
+          "chatDisabled": {
+            "type": "boolean",
+            "description": "Set to true when the actor cannot actively participate in converations"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.actor.deleteAccount",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.actor.exportAccountData",
+    "defs": {
+      "main": {
+        "type": "query",
+        "output": {
+          "encoding": "application/jsonl"
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.defs",
+    "defs": {
+      "messageRef": {
+        "type": "object",
+        "required": [
+          "did",
+          "messageId",
+          "convoId"
+        ],
+        "properties": {
+          "did": {
+            "type": "string",
+            "format": "did"
+          },
+          "convoId": {
+            "type": "string"
+          },
+          "messageId": {
+            "type": "string"
+          }
+        }
+      },
+      "messageInput": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 10000,
+            "maxGraphemes": 1000
+          },
+          "facets": {
+            "type": "array",
+            "description": "Annotations of text (mentions, URLs, hashtags, etc)",
+            "items": {
+              "type": "ref",
+              "ref": "app.bsky.richtext.facet"
+            }
+          },
+          "embed": {
+            "type": "union",
+            "refs": [
+              "app.bsky.embed.record"
+            ]
+          }
+        }
+      },
+      "messageView": {
+        "type": "object",
+        "required": [
+          "id",
+          "rev",
+          "text",
+          "sender",
+          "sentAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rev": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 10000,
+            "maxGraphemes": 1000
+          },
+          "facets": {
+            "type": "array",
+            "description": "Annotations of text (mentions, URLs, hashtags, etc)",
+            "items": {
+              "type": "ref",
+              "ref": "app.bsky.richtext.facet"
+            }
+          },
+          "embed": {
+            "type": "union",
+            "refs": [
+              "app.bsky.embed.record#view"
+            ]
+          },
+          "sender": {
+            "type": "ref",
+            "ref": "#messageViewSender"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      },
+      "deletedMessageView": {
+        "type": "object",
+        "required": [
+          "id",
+          "rev",
+          "sender",
+          "sentAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rev": {
+            "type": "string"
+          },
+          "sender": {
+            "type": "ref",
+            "ref": "#messageViewSender"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      },
+      "messageViewSender": {
+        "type": "object",
+        "required": [
+          "did"
+        ],
+        "properties": {
+          "did": {
+            "type": "string",
+            "format": "did"
+          }
+        }
+      },
+      "convoView": {
+        "type": "object",
+        "required": [
+          "id",
+          "rev",
+          "members",
+          "muted",
+          "unreadCount"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rev": {
+            "type": "string"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "chat.bsky.actor.defs#profileViewBasic"
+            }
+          },
+          "lastMessage": {
+            "type": "union",
+            "refs": [
+              "#messageView",
+              "#deletedMessageView"
+            ]
+          },
+          "muted": {
+            "type": "boolean"
+          },
+          "unreadCount": {
+            "type": "integer"
+          }
+        }
+      },
+      "logBeginConvo": {
+        "type": "object",
+        "required": [
+          "rev",
+          "convoId"
+        ],
+        "properties": {
+          "rev": {
+            "type": "string"
+          },
+          "convoId": {
+            "type": "string"
+          }
+        }
+      },
+      "logLeaveConvo": {
+        "type": "object",
+        "required": [
+          "rev",
+          "convoId"
+        ],
+        "properties": {
+          "rev": {
+            "type": "string"
+          },
+          "convoId": {
+            "type": "string"
+          }
+        }
+      },
+      "logCreateMessage": {
+        "type": "object",
+        "required": [
+          "rev",
+          "convoId",
+          "message"
+        ],
+        "properties": {
+          "rev": {
+            "type": "string"
+          },
+          "convoId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "union",
+            "refs": [
+              "#messageView",
+              "#deletedMessageView"
+            ]
+          }
+        }
+      },
+      "logDeleteMessage": {
+        "type": "object",
+        "required": [
+          "rev",
+          "convoId",
+          "message"
+        ],
+        "properties": {
+          "rev": {
+            "type": "string"
+          },
+          "convoId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "union",
+            "refs": [
+              "#messageView",
+              "#deletedMessageView"
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.deleteMessageForSelf",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convoId",
+              "messageId"
+            ],
+            "properties": {
+              "convoId": {
+                "type": "string"
+              },
+              "messageId": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "ref",
+            "ref": "chat.bsky.convo.defs#deletedMessageView"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.getConvo",
+    "defs": {
+      "main": {
+        "type": "query",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "convoId"
+          ],
+          "properties": {
+            "convoId": {
+              "type": "string"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convo"
+            ],
+            "properties": {
+              "convo": {
+                "type": "ref",
+                "ref": "chat.bsky.convo.defs#convoView"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.getConvoForMembers",
+    "defs": {
+      "main": {
+        "type": "query",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "members"
+          ],
+          "properties": {
+            "members": {
+              "type": "array",
+              "minLength": 1,
+              "maxLength": 10,
+              "items": {
+                "type": "string",
+                "format": "did"
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convo"
+            ],
+            "properties": {
+              "convo": {
+                "type": "ref",
+                "ref": "chat.bsky.convo.defs#convoView"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.getLog",
+    "defs": {
+      "main": {
+        "type": "query",
+        "parameters": {
+          "type": "params",
+          "required": [],
+          "properties": {
+            "cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "logs"
+            ],
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "logs": {
+                "type": "array",
+                "items": {
+                  "type": "union",
+                  "refs": [
+                    "chat.bsky.convo.defs#logBeginConvo",
+                    "chat.bsky.convo.defs#logLeaveConvo",
+                    "chat.bsky.convo.defs#logCreateMessage",
+                    "chat.bsky.convo.defs#logDeleteMessage"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.getMessages",
+    "defs": {
+      "main": {
+        "type": "query",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "convoId"
+          ],
+          "properties": {
+            "convoId": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "messages"
+            ],
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "messages": {
+                "type": "array",
+                "items": {
+                  "type": "union",
+                  "refs": [
+                    "chat.bsky.convo.defs#messageView",
+                    "chat.bsky.convo.defs#deletedMessageView"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.leaveConvo",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convoId"
+            ],
+            "properties": {
+              "convoId": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convoId",
+              "rev"
+            ],
+            "properties": {
+              "convoId": {
+                "type": "string"
+              },
+              "rev": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.listConvos",
+    "defs": {
+      "main": {
+        "type": "query",
+        "parameters": {
+          "type": "params",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convos"
+            ],
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "convos": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "chat.bsky.convo.defs#convoView"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.muteConvo",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convoId"
+            ],
+            "properties": {
+              "convoId": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convo"
+            ],
+            "properties": {
+              "convo": {
+                "type": "ref",
+                "ref": "chat.bsky.convo.defs#convoView"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.sendMessage",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convoId",
+              "message"
+            ],
+            "properties": {
+              "convoId": {
+                "type": "string"
+              },
+              "message": {
+                "type": "ref",
+                "ref": "chat.bsky.convo.defs#messageInput"
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "ref",
+            "ref": "chat.bsky.convo.defs#messageView"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.sendMessageBatch",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "maxLength": 100,
+                "items": {
+                  "type": "ref",
+                  "ref": "#batchItem"
+                }
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "chat.bsky.convo.defs#messageView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "batchItem": {
+        "type": "object",
+        "required": [
+          "convoId",
+          "message"
+        ],
+        "properties": {
+          "convoId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "ref",
+            "ref": "chat.bsky.convo.defs#messageInput"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.unmuteConvo",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convoId"
+            ],
+            "properties": {
+              "convoId": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convo"
+            ],
+            "properties": {
+              "convo": {
+                "type": "ref",
+                "ref": "chat.bsky.convo.defs#convoView"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.convo.updateRead",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convoId"
+            ],
+            "properties": {
+              "convoId": {
+                "type": "string"
+              },
+              "messageId": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "convo"
+            ],
+            "properties": {
+              "convo": {
+                "type": "ref",
+                "ref": "chat.bsky.convo.defs#convoView"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.moderation.getActorMetadata",
+    "defs": {
+      "main": {
+        "type": "query",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "actor"
+          ],
+          "properties": {
+            "actor": {
+              "type": "string",
+              "format": "did"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "day",
+              "month",
+              "all"
+            ],
+            "properties": {
+              "day": {
+                "type": "ref",
+                "ref": "#metadata"
+              },
+              "month": {
+                "type": "ref",
+                "ref": "#metadata"
+              },
+              "all": {
+                "type": "ref",
+                "ref": "#metadata"
+              }
+            }
+          }
+        }
+      },
+      "metadata": {
+        "type": "object",
+        "required": [
+          "messagesSent",
+          "messagesReceived",
+          "convos",
+          "convosStarted"
+        ],
+        "properties": {
+          "messagesSent": {
+            "type": "integer"
+          },
+          "messagesReceived": {
+            "type": "integer"
+          },
+          "convos": {
+            "type": "integer"
+          },
+          "convosStarted": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.moderation.getMessageContext",
+    "defs": {
+      "main": {
+        "type": "query",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "messageId"
+          ],
+          "properties": {
+            "convoId": {
+              "type": "string",
+              "description": "Conversation that the message is from. NOTE: this field will eventually be required."
+            },
+            "messageId": {
+              "type": "string"
+            },
+            "before": {
+              "type": "integer",
+              "default": 5
+            },
+            "after": {
+              "type": "integer",
+              "default": 5
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "messages"
+            ],
+            "properties": {
+              "messages": {
+                "type": "array",
+                "items": {
+                  "type": "union",
+                  "refs": [
+                    "chat.bsky.convo.defs#messageView",
+                    "chat.bsky.convo.defs#deletedMessageView"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "chat.bsky.moderation.updateActorAccess",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "actor",
+              "allowAccess"
+            ],
+            "properties": {
+              "actor": {
+                "type": "string",
+                "format": "did"
+              },
+              "allowAccess": {
+                "type": "boolean"
+              },
+              "ref": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.communication.createTemplate",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "description": "Administrative action to create a new, re-usable communication (email for now) template.",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "subject",
+              "contentMarkdown",
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the template."
+              },
+              "contentMarkdown": {
+                "type": "string",
+                "description": "Content of the template, markdown supported, can contain variable placeholders."
+              },
+              "subject": {
+                "type": "string",
+                "description": "Subject of the message, used in emails."
+              },
+              "createdBy": {
+                "type": "string",
+                "format": "did",
+                "description": "DID of the user who is creating the template."
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "ref",
+            "ref": "tools.ozone.communication.defs#templateView"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.communication.defs",
+    "defs": {
+      "templateView": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "contentMarkdown",
+          "disabled",
+          "lastUpdatedBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the template."
+          },
+          "subject": {
+            "type": "string",
+            "description": "Content of the template, can contain markdown and variable placeholders."
+          },
+          "contentMarkdown": {
+            "type": "string",
+            "description": "Subject of the message, used in emails."
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "lastUpdatedBy": {
+            "type": "string",
+            "format": "did",
+            "description": "DID of the user who last updated the template."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.communication.deleteTemplate",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "description": "Delete a communication template.",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.communication.listTemplates",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Get list of all communication templates.",
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "communicationTemplates"
+            ],
+            "properties": {
+              "communicationTemplates": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "tools.ozone.communication.defs#templateView"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.communication.updateTemplate",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "description": "Administrative action to update an existing communication template. Allows passing partial fields to patch specific fields only.",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "ID of the template to be updated."
+              },
+              "name": {
+                "type": "string",
+                "description": "Name of the template."
+              },
+              "contentMarkdown": {
+                "type": "string",
+                "description": "Content of the template, markdown supported, can contain variable placeholders."
+              },
+              "subject": {
+                "type": "string",
+                "description": "Subject of the message, used in emails."
+              },
+              "updatedBy": {
+                "type": "string",
+                "format": "did",
+                "description": "DID of the user who is updating the template."
+              },
+              "disabled": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "ref",
+            "ref": "tools.ozone.communication.defs#templateView"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.moderation.defs",
+    "defs": {
+      "modEventView": {
+        "type": "object",
+        "required": [
+          "id",
+          "event",
+          "subject",
+          "subjectBlobCids",
+          "createdBy",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "event": {
+            "type": "union",
+            "refs": [
+              "#modEventTakedown",
+              "#modEventReverseTakedown",
+              "#modEventComment",
+              "#modEventReport",
+              "#modEventLabel",
+              "#modEventAcknowledge",
+              "#modEventEscalate",
+              "#modEventMute",
+              "#modEventUnmute",
+              "#modEventMuteReporter",
+              "#modEventUnmuteReporter",
+              "#modEventEmail",
+              "#modEventResolveAppeal",
+              "#modEventDivert",
+              "#modEventTag"
+            ]
+          },
+          "subject": {
+            "type": "union",
+            "refs": [
+              "com.atproto.admin.defs#repoRef",
+              "com.atproto.repo.strongRef",
+              "chat.bsky.convo.defs#messageRef"
+            ]
+          },
+          "subjectBlobCids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "did"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "creatorHandle": {
+            "type": "string"
+          },
+          "subjectHandle": {
+            "type": "string"
+          }
+        }
+      },
+      "modEventViewDetail": {
+        "type": "object",
+        "required": [
+          "id",
+          "event",
+          "subject",
+          "subjectBlobs",
+          "createdBy",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "event": {
+            "type": "union",
+            "refs": [
+              "#modEventTakedown",
+              "#modEventReverseTakedown",
+              "#modEventComment",
+              "#modEventReport",
+              "#modEventLabel",
+              "#modEventAcknowledge",
+              "#modEventEscalate",
+              "#modEventMute",
+              "#modEventUnmute",
+              "#modEventMuteReporter",
+              "#modEventUnmuteReporter",
+              "#modEventEmail",
+              "#modEventResolveAppeal",
+              "#modEventDivert",
+              "#modEventTag"
+            ]
+          },
+          "subject": {
+            "type": "union",
+            "refs": [
+              "#repoView",
+              "#repoViewNotFound",
+              "#recordView",
+              "#recordViewNotFound"
+            ]
+          },
+          "subjectBlobs": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "#blobView"
+            }
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "did"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      },
+      "subjectStatusView": {
+        "type": "object",
+        "required": [
+          "id",
+          "subject",
+          "createdAt",
+          "updatedAt",
+          "reviewState"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "subject": {
+            "type": "union",
+            "refs": [
+              "com.atproto.admin.defs#repoRef",
+              "com.atproto.repo.strongRef"
+            ]
+          },
+          "subjectBlobCids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "cid"
+            }
+          },
+          "subjectRepoHandle": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "datetime",
+            "description": "Timestamp referencing when the last update was made to the moderation status of the subject"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime",
+            "description": "Timestamp referencing the first moderation status impacting event was emitted on the subject"
+          },
+          "reviewState": {
+            "type": "ref",
+            "ref": "#subjectReviewState"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Sticky comment on the subject."
+          },
+          "muteUntil": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "muteReportingUntil": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "lastReviewedBy": {
+            "type": "string",
+            "format": "did"
+          },
+          "lastReviewedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "lastReportedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "lastAppealedAt": {
+            "type": "string",
+            "format": "datetime",
+            "description": "Timestamp referencing when the author of the subject appealed a moderation action"
+          },
+          "takendown": {
+            "type": "boolean"
+          },
+          "appealed": {
+            "type": "boolean",
+            "description": "True indicates that the a previously taken moderator action was appealed against, by the author of the content. False indicates last appeal was resolved by moderators."
+          },
+          "suspendUntil": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "subjectReviewState": {
+        "type": "string",
+        "knownValues": [
+          "#reviewOpen",
+          "#reviewEscalated",
+          "#reviewClosed",
+          "#reviewNone"
+        ]
+      },
+      "reviewOpen": {
+        "type": "token",
+        "description": "Moderator review status of a subject: Open. Indicates that the subject needs to be reviewed by a moderator"
+      },
+      "reviewEscalated": {
+        "type": "token",
+        "description": "Moderator review status of a subject: Escalated. Indicates that the subject was escalated for review by a moderator"
+      },
+      "reviewClosed": {
+        "type": "token",
+        "description": "Moderator review status of a subject: Closed. Indicates that the subject was already reviewed and resolved by a moderator"
+      },
+      "reviewNone": {
+        "type": "token",
+        "description": "Moderator review status of a subject: Unnecessary. Indicates that the subject does not need a review at the moment but there is probably some moderation related metadata available for it"
+      },
+      "modEventTakedown": {
+        "type": "object",
+        "description": "Take down a subject permanently or temporarily",
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "durationInHours": {
+            "type": "integer",
+            "description": "Indicates how long the takedown should be in effect before automatically expiring."
+          }
+        }
+      },
+      "modEventReverseTakedown": {
+        "type": "object",
+        "description": "Revert take down action on a subject",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "Describe reasoning behind the reversal."
+          }
+        }
+      },
+      "modEventResolveAppeal": {
+        "type": "object",
+        "description": "Resolve appeal on a subject",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "Describe resolution."
+          }
+        }
+      },
+      "modEventComment": {
+        "type": "object",
+        "description": "Add a comment to a subject",
+        "required": [
+          "comment"
+        ],
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "sticky": {
+            "type": "boolean",
+            "description": "Make the comment persistent on the subject"
+          }
+        }
+      },
+      "modEventReport": {
+        "type": "object",
+        "description": "Report a subject",
+        "required": [
+          "reportType"
+        ],
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "isReporterMuted": {
+            "type": "boolean",
+            "description": "Set to true if the reporter was muted from reporting at the time of the event. These reports won't impact the reviewState of the subject."
+          },
+          "reportType": {
+            "type": "ref",
+            "ref": "com.atproto.moderation.defs#reasonType"
+          }
+        }
+      },
+      "modEventLabel": {
+        "type": "object",
+        "description": "Apply/Negate labels on a subject",
+        "required": [
+          "createLabelVals",
+          "negateLabelVals"
+        ],
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "createLabelVals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "negateLabelVals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "modEventAcknowledge": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "modEventEscalate": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "modEventMute": {
+        "type": "object",
+        "description": "Mute incoming reports on a subject",
+        "required": [
+          "durationInHours"
+        ],
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "durationInHours": {
+            "type": "integer",
+            "description": "Indicates how long the subject should remain muted."
+          }
+        }
+      },
+      "modEventUnmute": {
+        "type": "object",
+        "description": "Unmute action on a subject",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "Describe reasoning behind the reversal."
+          }
+        }
+      },
+      "modEventMuteReporter": {
+        "type": "object",
+        "description": "Mute incoming reports from an account",
+        "required": [
+          "durationInHours"
+        ],
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "durationInHours": {
+            "type": "integer",
+            "description": "Indicates how long the account should remain muted."
+          }
+        }
+      },
+      "modEventUnmuteReporter": {
+        "type": "object",
+        "description": "Unmute incoming reports from an account",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "Describe reasoning behind the reversal."
+          }
+        }
+      },
+      "modEventEmail": {
+        "type": "object",
+        "description": "Keep a log of outgoing email to a user",
+        "required": [
+          "subjectLine"
+        ],
+        "properties": {
+          "subjectLine": {
+            "type": "string",
+            "description": "The subject line of the email sent to the user."
+          },
+          "content": {
+            "type": "string",
+            "description": "The content of the email sent to the user."
+          },
+          "comment": {
+            "type": "string",
+            "description": "Additional comment about the outgoing comm."
+          }
+        }
+      },
+      "modEventDivert": {
+        "type": "object",
+        "description": "Divert a record's blobs to a 3rd party service for further scanning/tagging",
+        "properties": {
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "modEventTag": {
+        "type": "object",
+        "description": "Add/Remove a tag on a subject",
+        "required": [
+          "add",
+          "remove"
+        ],
+        "properties": {
+          "add": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tags to be added to the subject. If already exists, won't be duplicated."
+          },
+          "remove": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tags to be removed to the subject. Ignores a tag If it doesn't exist, won't be duplicated."
+          },
+          "comment": {
+            "type": "string",
+            "description": "Additional comment about added/removed tags."
+          }
+        }
+      },
+      "repoView": {
+        "type": "object",
+        "required": [
+          "did",
+          "handle",
+          "relatedRecords",
+          "indexedAt",
+          "moderation"
+        ],
+        "properties": {
+          "did": {
+            "type": "string",
+            "format": "did"
+          },
+          "handle": {
+            "type": "string",
+            "format": "handle"
+          },
+          "email": {
+            "type": "string"
+          },
+          "relatedRecords": {
+            "type": "array",
+            "items": {
+              "type": "unknown"
+            }
+          },
+          "indexedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "moderation": {
+            "type": "ref",
+            "ref": "#moderation"
+          },
+          "invitedBy": {
+            "type": "ref",
+            "ref": "com.atproto.server.defs#inviteCode"
+          },
+          "invitesDisabled": {
+            "type": "boolean"
+          },
+          "inviteNote": {
+            "type": "string"
+          },
+          "deactivatedAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      },
+      "repoViewDetail": {
+        "type": "object",
+        "required": [
+          "did",
+          "handle",
+          "relatedRecords",
+          "indexedAt",
+          "moderation"
+        ],
+        "properties": {
+          "did": {
+            "type": "string",
+            "format": "did"
+          },
+          "handle": {
+            "type": "string",
+            "format": "handle"
+          },
+          "email": {
+            "type": "string"
+          },
+          "relatedRecords": {
+            "type": "array",
+            "items": {
+              "type": "unknown"
+            }
+          },
+          "indexedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "moderation": {
+            "type": "ref",
+            "ref": "#moderationDetail"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "com.atproto.label.defs#label"
+            }
+          },
+          "invitedBy": {
+            "type": "ref",
+            "ref": "com.atproto.server.defs#inviteCode"
+          },
+          "invites": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "com.atproto.server.defs#inviteCode"
+            }
+          },
+          "invitesDisabled": {
+            "type": "boolean"
+          },
+          "inviteNote": {
+            "type": "string"
+          },
+          "emailConfirmedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "deactivatedAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      },
+      "repoViewNotFound": {
+        "type": "object",
+        "required": [
+          "did"
+        ],
+        "properties": {
+          "did": {
+            "type": "string",
+            "format": "did"
+          }
+        }
+      },
+      "recordView": {
+        "type": "object",
+        "required": [
+          "uri",
+          "cid",
+          "value",
+          "blobCids",
+          "indexedAt",
+          "moderation",
+          "repo"
+        ],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri"
+          },
+          "cid": {
+            "type": "string",
+            "format": "cid"
+          },
+          "value": {
+            "type": "unknown"
+          },
+          "blobCids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "cid"
+            }
+          },
+          "indexedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "moderation": {
+            "type": "ref",
+            "ref": "#moderation"
+          },
+          "repo": {
+            "type": "ref",
+            "ref": "#repoView"
+          }
+        }
+      },
+      "recordViewDetail": {
+        "type": "object",
+        "required": [
+          "uri",
+          "cid",
+          "value",
+          "blobs",
+          "indexedAt",
+          "moderation",
+          "repo"
+        ],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri"
+          },
+          "cid": {
+            "type": "string",
+            "format": "cid"
+          },
+          "value": {
+            "type": "unknown"
+          },
+          "blobs": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "#blobView"
+            }
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "ref",
+              "ref": "com.atproto.label.defs#label"
+            }
+          },
+          "indexedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "moderation": {
+            "type": "ref",
+            "ref": "#moderationDetail"
+          },
+          "repo": {
+            "type": "ref",
+            "ref": "#repoView"
+          }
+        }
+      },
+      "recordViewNotFound": {
+        "type": "object",
+        "required": [
+          "uri"
+        ],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri"
+          }
+        }
+      },
+      "moderation": {
+        "type": "object",
+        "properties": {
+          "subjectStatus": {
+            "type": "ref",
+            "ref": "#subjectStatusView"
+          }
+        }
+      },
+      "moderationDetail": {
+        "type": "object",
+        "properties": {
+          "subjectStatus": {
+            "type": "ref",
+            "ref": "#subjectStatusView"
+          }
+        }
+      },
+      "blobView": {
+        "type": "object",
+        "required": [
+          "cid",
+          "mimeType",
+          "size",
+          "createdAt"
+        ],
+        "properties": {
+          "cid": {
+            "type": "string",
+            "format": "cid"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "details": {
+            "type": "union",
+            "refs": [
+              "#imageDetails",
+              "#videoDetails"
+            ]
+          },
+          "moderation": {
+            "type": "ref",
+            "ref": "#moderation"
+          }
+        }
+      },
+      "imageDetails": {
+        "type": "object",
+        "required": [
+          "width",
+          "height"
+        ],
+        "properties": {
+          "width": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          }
+        }
+      },
+      "videoDetails": {
+        "type": "object",
+        "required": [
+          "width",
+          "height",
+          "length"
+        ],
+        "properties": {
+          "width": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "length": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.moderation.emitEvent",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "description": "Take a moderation action on an actor.",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "event",
+              "subject",
+              "createdBy"
+            ],
+            "properties": {
+              "event": {
+                "type": "union",
+                "refs": [
+                  "tools.ozone.moderation.defs#modEventTakedown",
+                  "tools.ozone.moderation.defs#modEventAcknowledge",
+                  "tools.ozone.moderation.defs#modEventEscalate",
+                  "tools.ozone.moderation.defs#modEventComment",
+                  "tools.ozone.moderation.defs#modEventLabel",
+                  "tools.ozone.moderation.defs#modEventReport",
+                  "tools.ozone.moderation.defs#modEventMute",
+                  "tools.ozone.moderation.defs#modEventUnmute",
+                  "tools.ozone.moderation.defs#modEventMuteReporter",
+                  "tools.ozone.moderation.defs#modEventUnmuteReporter",
+                  "tools.ozone.moderation.defs#modEventReverseTakedown",
+                  "tools.ozone.moderation.defs#modEventEmail",
+                  "tools.ozone.moderation.defs#modEventTag"
+                ]
+              },
+              "subject": {
+                "type": "union",
+                "refs": [
+                  "com.atproto.admin.defs#repoRef",
+                  "com.atproto.repo.strongRef"
+                ]
+              },
+              "subjectBlobCids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "cid"
+                }
+              },
+              "createdBy": {
+                "type": "string",
+                "format": "did"
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "ref",
+            "ref": "tools.ozone.moderation.defs#modEventView"
+          }
+        },
+        "errors": [
+          {
+            "name": "SubjectHasAction"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.moderation.getEvent",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Get details about a moderation event.",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "ref",
+            "ref": "tools.ozone.moderation.defs#modEventViewDetail"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.moderation.getRecord",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Get details about a record.",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "uri"
+          ],
+          "properties": {
+            "uri": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "cid": {
+              "type": "string",
+              "format": "cid"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "ref",
+            "ref": "tools.ozone.moderation.defs#recordViewDetail"
+          }
+        },
+        "errors": [
+          {
+            "name": "RecordNotFound"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.moderation.getRepo",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Get details about a repository.",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "did"
+          ],
+          "properties": {
+            "did": {
+              "type": "string",
+              "format": "did"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "ref",
+            "ref": "tools.ozone.moderation.defs#repoViewDetail"
+          }
+        },
+        "errors": [
+          {
+            "name": "RepoNotFound"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.moderation.queryEvents",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "List moderation events related to a subject.",
+        "parameters": {
+          "type": "params",
+          "properties": {
+            "types": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "The types of events (fully qualified string in the format of tools.ozone.moderation.defs#modEvent<name>) to filter by. If not specified, all events are returned."
+            },
+            "createdBy": {
+              "type": "string",
+              "format": "did"
+            },
+            "sortDirection": {
+              "type": "string",
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort direction for the events. Defaults to descending order of created at timestamp."
+            },
+            "createdAfter": {
+              "type": "string",
+              "format": "datetime",
+              "description": "Retrieve events created after a given timestamp"
+            },
+            "createdBefore": {
+              "type": "string",
+              "format": "datetime",
+              "description": "Retrieve events created before a given timestamp"
+            },
+            "subject": {
+              "type": "string",
+              "format": "uri"
+            },
+            "includeAllUserRecords": {
+              "type": "boolean",
+              "default": false,
+              "description": "If true, events on all record types (posts, lists, profile etc.) owned by the did are returned"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "hasComment": {
+              "type": "boolean",
+              "description": "If true, only events with comments are returned"
+            },
+            "comment": {
+              "type": "string",
+              "description": "If specified, only events with comments containing the keyword are returned"
+            },
+            "addedLabels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "If specified, only events where all of these labels were added are returned"
+            },
+            "removedLabels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "If specified, only events where all of these labels were removed are returned"
+            },
+            "addedTags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "If specified, only events where all of these tags were added are returned"
+            },
+            "removedTags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "If specified, only events where all of these tags were removed are returned"
+            },
+            "reportTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "events"
+            ],
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "events": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "tools.ozone.moderation.defs#modEventView"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.moderation.queryStatuses",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "View moderation statuses of subjects (record or repo).",
+        "parameters": {
+          "type": "params",
+          "properties": {
+            "subject": {
+              "type": "string",
+              "format": "uri"
+            },
+            "comment": {
+              "type": "string",
+              "description": "Search subjects by keyword from comments"
+            },
+            "reportedAfter": {
+              "type": "string",
+              "format": "datetime",
+              "description": "Search subjects reported after a given timestamp"
+            },
+            "reportedBefore": {
+              "type": "string",
+              "format": "datetime",
+              "description": "Search subjects reported before a given timestamp"
+            },
+            "reviewedAfter": {
+              "type": "string",
+              "format": "datetime",
+              "description": "Search subjects reviewed after a given timestamp"
+            },
+            "reviewedBefore": {
+              "type": "string",
+              "format": "datetime",
+              "description": "Search subjects reviewed before a given timestamp"
+            },
+            "includeMuted": {
+              "type": "boolean",
+              "description": "By default, we don't include muted subjects in the results. Set this to true to include them."
+            },
+            "onlyMuted": {
+              "type": "boolean",
+              "description": "When set to true, only muted subjects and reporters will be returned."
+            },
+            "reviewState": {
+              "type": "string",
+              "description": "Specify when fetching subjects in a certain state"
+            },
+            "ignoreSubjects": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "lastReviewedBy": {
+              "type": "string",
+              "format": "did",
+              "description": "Get all subject statuses that were reviewed by a specific moderator"
+            },
+            "sortField": {
+              "type": "string",
+              "default": "lastReportedAt",
+              "enum": [
+                "lastReviewedAt",
+                "lastReportedAt"
+              ]
+            },
+            "sortDirection": {
+              "type": "string",
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            },
+            "takendown": {
+              "type": "boolean",
+              "description": "Get subjects that were taken down"
+            },
+            "appealed": {
+              "type": "boolean",
+              "description": "Get subjects in unresolved appealed status"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "excludeTags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "subjectStatuses"
+            ],
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "subjectStatuses": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "tools.ozone.moderation.defs#subjectStatusView"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.moderation.searchRepos",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Find repositories based on a search term.",
+        "parameters": {
+          "type": "params",
+          "properties": {
+            "term": {
+              "type": "string",
+              "description": "DEPRECATED: use 'q' instead"
+            },
+            "q": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "repos"
+            ],
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "repos": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "tools.ozone.moderation.defs#repoView"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.server.getConfig",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "Get details about ozone's server configuration.",
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "appview": {
+                "type": "ref",
+                "ref": "#serviceConfig"
+              },
+              "pds": {
+                "type": "ref",
+                "ref": "#serviceConfig"
+              },
+              "blobDivert": {
+                "type": "ref",
+                "ref": "#serviceConfig"
+              },
+              "chat": {
+                "type": "ref",
+                "ref": "#serviceConfig"
+              },
+              "viewer": {
+                "type": "ref",
+                "ref": "#viewerConfig"
+              }
+            }
+          }
+        }
+      },
+      "serviceConfig": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "viewerConfig": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "knownValues": [
+              "tools.ozone.team.defs#roleAdmin",
+              "tools.ozone.team.defs#roleModerator",
+              "tools.ozone.team.defs#roleTriage"
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.team.addMember",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "description": "Add a member to the ozone team. Requires admin role.",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "did",
+              "role"
+            ],
+            "properties": {
+              "did": {
+                "type": "string",
+                "format": "did"
+              },
+              "role": {
+                "type": "string",
+                "knownValues": [
+                  "tools.ozone.team.defs#roleAdmin",
+                  "tools.ozone.team.defs#roleModerator",
+                  "tools.ozone.team.defs#roleTriage"
+                ]
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "ref",
+            "ref": "tools.ozone.team.defs#member"
+          }
+        },
+        "errors": [
+          {
+            "name": "MemberAlreadyExists",
+            "description": "Member already exists in the team."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.team.defs",
+    "defs": {
+      "member": {
+        "type": "object",
+        "required": [
+          "did",
+          "role"
+        ],
+        "properties": {
+          "did": {
+            "type": "string",
+            "format": "did"
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "profile": {
+            "type": "ref",
+            "ref": "app.bsky.actor.defs#profileViewDetailed"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "lastUpdatedBy": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "knownValues": [
+              "#roleAdmin",
+              "#roleModerator",
+              "#roleTriage"
+            ]
+          }
+        }
+      },
+      "roleAdmin": {
+        "type": "token",
+        "description": "Admin role. Highest level of access, can perform all actions."
+      },
+      "roleModerator": {
+        "type": "token",
+        "description": "Moderator role. Can perform most actions."
+      },
+      "roleTriage": {
+        "type": "token",
+        "description": "Triage role. Mostly intended for monitoring and escalating issues."
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.team.deleteMember",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "description": "Delete a member from ozone team. Requires admin role.",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "did"
+            ],
+            "properties": {
+              "did": {
+                "type": "string",
+                "format": "did"
+              }
+            }
+          }
+        },
+        "errors": [
+          {
+            "name": "MemberNotFound",
+            "description": "The member being deleted does not exist"
+          },
+          {
+            "name": "CannotDeleteSelf",
+            "description": "You can not delete yourself from the team"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.team.listMembers",
+    "defs": {
+      "main": {
+        "type": "query",
+        "description": "List all members with access to the ozone service.",
+        "parameters": {
+          "type": "params",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "members"
+            ],
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "members": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "tools.ozone.team.defs#member"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "tools.ozone.team.updateMember",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "description": "Update a member in the ozone service. Requires admin role.",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "did"
+            ],
+            "properties": {
+              "did": {
+                "type": "string",
+                "format": "did"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "role": {
+                "type": "string",
+                "knownValues": [
+                  "tools.ozone.team.defs#roleAdmin",
+                  "tools.ozone.team.defs#roleModerator",
+                  "tools.ozone.team.defs#roleTriage"
+                ]
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "ref",
+            "ref": "tools.ozone.team.defs#member"
+          }
+        },
+        "errors": [
+          {
+            "name": "MemberNotFound",
+            "description": "The member being updated does not exist in the team"
           }
         ]
       }
