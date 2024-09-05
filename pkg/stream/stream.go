@@ -119,7 +119,7 @@ func NewStream(
 		SkipDNSDomainSuffixes: []string{".bsky.social"},
 	}
 
-	dir := identity.NewCacheDirectory(&base, 100_000, time.Hour*6, time.Minute*2, time.Hour*6)
+	dir := identity.NewCacheDirectory(&base, 500_000, time.Hour*6, time.Minute*2, time.Hour*6)
 
 	// Set pragmas for performance
 	writer.Exec("PRAGMA journal_mode=WAL;")
