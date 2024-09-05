@@ -63,6 +63,7 @@ func NewStream(
 	migrate bool,
 	ttl time.Duration,
 	bq *bq.BQ,
+	plcRateLimit int64,
 ) (*Stream, error) {
 	gormLogger := slogGorm.New()
 
@@ -106,7 +107,7 @@ func NewStream(
 		HTTPClient: http.Client{
 			Timeout: time.Second * 15,
 		},
-		PLCLimiter: rate.NewLimiter(rate.Limit(25), 1),
+		PLCLimiter: rate.NewLimiter(rate.Limit(plcRateLimit), 1),
 		Resolver: net.Resolver{
 			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 				d := net.Dialer{Timeout: time.Second * 5}

@@ -86,6 +86,12 @@ func main() {
 			EnvVars: []string{"LG_BIGQUERY_TABLE_PREFIX"},
 			Value:   "records",
 		},
+		&cli.Int64Flag{
+			Name:    "plc-rate-limit",
+			Usage:   "rate limit for PLC lookups in requests per second",
+			Value:   100,
+			EnvVars: []string{"LG_PLC_RATE_LIMIT"},
+		},
 	}
 
 	app.Action = LookingGlass
@@ -163,6 +169,7 @@ func LookingGlass(cctx *cli.Context) error {
 		cctx.Bool("migrate-db"),
 		cctx.Duration("evt-record-ttl"),
 		bqInstance,
+		cctx.Int64("plc-rate-limit"),
 	)
 	if err != nil {
 		logger.Error("failed to create stream", "error", err)
