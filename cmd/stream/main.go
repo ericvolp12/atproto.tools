@@ -92,6 +92,12 @@ func main() {
 			Value:   100,
 			EnvVars: []string{"LG_PLC_RATE_LIMIT"},
 		},
+		&cli.BoolFlag{
+			Name:    "lookup-on-commit",
+			Usage:   "lookup DID docs on commit events (don't use for high volume services without ratelimit bypasses)",
+			Value:   false,
+			EnvVars: []string{"LG_LOOKUP_ON_COMMIT"},
+		},
 	}
 
 	app.Action = LookingGlass
@@ -170,6 +176,7 @@ func LookingGlass(cctx *cli.Context) error {
 		cctx.Duration("evt-record-ttl"),
 		bqInstance,
 		cctx.Int64("plc-rate-limit"),
+		cctx.Bool("lookup-on-commit"),
 	)
 	if err != nil {
 		logger.Error("failed to create stream", "error", err)

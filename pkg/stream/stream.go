@@ -49,7 +49,8 @@ type Stream struct {
 	reader *gorm.DB
 	ttl    time.Duration
 
-	dir *identity.CacheDirectory
+	dir            *identity.CacheDirectory
+	lookupOnCommit bool
 
 	bq *bq.BQ
 }
@@ -64,6 +65,7 @@ func NewStream(
 	ttl time.Duration,
 	bq *bq.BQ,
 	plcRateLimit int64,
+	lookupOnCommit bool,
 ) (*Stream, error) {
 	gormLogger := slogGorm.New()
 
@@ -123,7 +125,7 @@ func NewStream(
 
 	// Set pragmas for performance
 	writer.Exec("PRAGMA journal_mode=WAL;")
-	writer.Exec("PRAGMA synchronous=normal;")
+	writer.Exec("PRAGMA synchronous=off;")
 
 	reader, err := gorm.Open(sqlite.Open(sqlitePath), &gorm.Config{
 		Logger: gormLogger,
@@ -133,7 +135,7 @@ func NewStream(
 	}
 
 	reader.Exec("PRAGMA journal_mode=WAL;")
-	reader.Exec("PRAGMA synchronous=normal;")
+	reader.Exec("PRAGMA synchronous=off;")
 
 	u, err := url.Parse(socketURL)
 	if err != nil {
@@ -141,14 +143,15 @@ func NewStream(
 	}
 
 	return &Stream{
-		logger:       logger,
-		socketURL:    u,
-		streamClosed: make(chan struct{}),
-		writer:       writer,
-		reader:       reader,
-		ttl:          ttl,
-		dir:          &dir,
-		bq:           bq,
+		logger:         logger,
+		socketURL:      u,
+		streamClosed:   make(chan struct{}),
+		writer:         writer,
+		reader:         reader,
+		ttl:            ttl,
+		dir:            &dir,
+		bq:             bq,
+		lookupOnCommit: lookupOnCommit,
 	}, nil
 }
 
@@ -333,7 +336,7 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 	did, err := syntax.ParseDID(evt.Repo)
 	if err != nil {
 		s.logger.Error("failed to parse DID", "err", err)
-	} else {
+	} else if s.lookupOnCommit {
 		id, fromCache, err := s.dir.LookupDIDWithCacheState(ctx, did)
 		if err != nil {
 			s.logger.Error("failed to lookup DID", "err", err)
