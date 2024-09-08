@@ -140,7 +140,7 @@ func LookingGlass(cctx *cli.Context) error {
 		}
 		defer func() {
 			if err := shutdown(ctx); err != nil {
-				logger.Error("failed to shutdown export pipeline: %+v", err)
+				logger.Error("failed to shutdown export pipeline", "error", err)
 			}
 		}()
 	}

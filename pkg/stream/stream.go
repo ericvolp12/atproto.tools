@@ -82,24 +82,9 @@ func NewStream(
 
 	if migrate {
 		logger.Info("running database migrations")
-		err := writer.AutoMigrate(&Event{})
+		err := writer.AutoMigrate(&Event{}, &Record{}, &Cursor{}, &Identity{})
 		if err != nil {
-			return nil, fmt.Errorf("failed to migrate events: %w", err)
-		}
-
-		err = writer.AutoMigrate(&Record{})
-		if err != nil {
-			return nil, fmt.Errorf("failed to migrate records: %w", err)
-		}
-
-		err = writer.AutoMigrate(&Cursor{})
-		if err != nil {
-			return nil, fmt.Errorf("failed to migrate cursor: %w", err)
-		}
-
-		err = writer.AutoMigrate(Identity{})
-		if err != nil {
-			return nil, fmt.Errorf("failed to migrate identity: %w", err)
+			return nil, fmt.Errorf("failed to run database migrations: %w", err)
 		}
 		logger.Info("database migrations complete")
 	}
@@ -124,8 +109,14 @@ func NewStream(
 	dir := identity.NewCacheDirectory(&base, 500_000, time.Hour*6, time.Minute*2, time.Hour*6)
 
 	// Set pragmas for performance
-	writer.Exec("PRAGMA journal_mode=WAL;")
-	writer.Exec("PRAGMA synchronous=off;")
+	err = writer.Exec("PRAGMA journal_mode=WAL;").Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to set journal mode: %w", err)
+	}
+	err = writer.Exec("PRAGMA synchronous=off;").Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to set synchronous mode: %w", err)
+	}
 
 	reader, err := gorm.Open(sqlite.Open(sqlitePath), &gorm.Config{
 		Logger: gormLogger,
@@ -134,8 +125,15 @@ func NewStream(
 		return nil, fmt.Errorf("failed to open sqlite db: %w", err)
 	}
 
-	reader.Exec("PRAGMA journal_mode=WAL;")
-	reader.Exec("PRAGMA synchronous=off;")
+	// Set pragmas for performance
+	err = reader.Exec("PRAGMA journal_mode=WAL;").Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to set journal mode: %w", err)
+	}
+	err = reader.Exec("PRAGMA synchronous=off;").Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to set synchronous mode: %w", err)
+	}
 
 	u, err := url.Parse(socketURL)
 	if err != nil {
