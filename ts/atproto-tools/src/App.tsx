@@ -9,7 +9,6 @@ import {
 
 import LexiconEditor from "./components/lexicon-editor/LexiconEditor";
 import Records from "./components/records-temp/Records";
-import Welcome from "./components/welcome/Welcome";
 
 const NavList: React.FC = () => {
   let location = useLocation();
@@ -30,10 +29,6 @@ const NavList: React.FC = () => {
       <div className="mx-auto max-w-7xl px-2 align-middle ">
         <span className="footer-text text-xs">
           <Link to="/" className={active(["/"])}>
-            welcome
-          </Link>
-          {" | "}
-          <Link to="/records" className={active(["/records"])}>
             records
           </Link>
           {" | "}
@@ -74,15 +69,6 @@ const ThemeWrapper: React.FC<{ children: React.ReactNode }> = ({
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <ThemeWrapper>
-        <NavList />
-        <Welcome />
-      </ThemeWrapper>
-    ),
-  },
-  {
-    path: "/records",
     element: (
       <ThemeWrapper>
         <NavList />
