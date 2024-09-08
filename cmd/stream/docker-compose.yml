@@ -13,7 +13,7 @@ services:
       - LG_DEBUG=false
       - LG_SQLITE_PATH=/data/looking-glass.db
       - LG_MIGRATE_DB=true
-      - LG_EVT_RECORD_TTL=48h
+      - LG_EVT_RECORD_TTL=12h
       - GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json
     env_file:
       - .lg.env
