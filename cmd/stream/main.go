@@ -187,7 +187,7 @@ func LookingGlass(cctx *cli.Context) error {
 	shutdownLivenessChecker := make(chan struct{})
 	livenessCheckerShutdown := make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(15 * time.Second)
+		ticker := time.NewTicker(30 * time.Second)
 		lastSeq := int64(0)
 
 		logger := slog.With("source", "liveness_checker")
@@ -201,7 +201,7 @@ func LookingGlass(cctx *cli.Context) error {
 			case <-ticker.C:
 				seq := s.GetSeq()
 				if seq == lastSeq {
-					logger.Error("no new events in last 15 seconds, shutting down for docker to restart me", "last_seq", lastSeq)
+					logger.Error("no new events in last 30 seconds, shutting down for docker to restart me", "last_seq", lastSeq)
 					close(kill)
 				} else {
 					logger.Debug("received new event, resetting liveness timer", "last_seq", seq)
