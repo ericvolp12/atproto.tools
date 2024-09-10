@@ -117,6 +117,10 @@ func NewStream(
 	if err != nil {
 		return nil, fmt.Errorf("failed to set synchronous mode: %w", err)
 	}
+	err = writer.Exec("PRAGMA cache_size=-200000;").Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to set cache size: %w", err)
+	}
 
 	reader, err := gorm.Open(sqlite.Open(sqlitePath), &gorm.Config{
 		Logger: gormLogger,
