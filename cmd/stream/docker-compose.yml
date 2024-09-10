@@ -1,12 +1,19 @@
 version: "3.8"
 services:
   looking-glass-consumer:
+    image: ghcr.io/ericvolp12/atproto.tools/looking-glass-consumer:${VERSION}
     build:
       context: ../../
       dockerfile: cmd/stream/Dockerfile
     restart: always
-    image: looking-glass-consumer
     container_name: looking-glass-consumer
+    ports:
+      - "6962:8080"
+    volumes:
+      - ../../data/lg-consumer:/data
+      - ~/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro
+    env_file:
+      - .lg.env
     environment:
       - LG_WS_URL=wss://bsky.network/xrpc/com.atproto.sync.subscribeRepos
       - LG_PORT=8080
@@ -15,10 +22,3 @@ services:
       - LG_MIGRATE_DB=true
       - LG_EVT_RECORD_TTL=12h
       - GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json
-    env_file:
-      - .lg.env
-    ports:
-      - "6962:8080"
-    volumes:
-      - ../../data/lg-consumer:/data
-      - ~/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro

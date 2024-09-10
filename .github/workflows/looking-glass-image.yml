@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: atproto-looking-glass
+  IMAGE_NAME: ${{ github.repository }}/looking-glass-consumer
 
 jobs:
   build-and-push-image:
