@@ -200,9 +200,12 @@ func LookingGlass(cctx *cli.Context) error {
 				return
 			case <-ticker.C:
 				seq := s.GetSeq()
-				if seq == lastSeq {
+				cleaningUp := s.GetCleaningUp()
+				if seq == lastSeq && !cleaningUp {
 					logger.Error("no new events in last 30 seconds, shutting down for docker to restart me", "last_seq", lastSeq)
 					close(kill)
+				} else if cleaningUp {
+					logger.Info("checked for liveness during cleanup, skipping this cycle", "last_seq", lastSeq)
 				} else {
 					logger.Debug("received new event, resetting liveness timer", "last_seq", seq)
 					lastSeq = seq

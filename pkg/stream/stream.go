@@ -40,8 +40,9 @@ type Stream struct {
 
 	scheduler events.Scheduler
 
-	lastSeq int64
-	seqLk   sync.RWMutex
+	lastSeq    int64
+	cleaningUp bool
+	seqLk      sync.RWMutex
 
 	streamClosed chan struct{}
 
@@ -176,9 +177,7 @@ func (s *Stream) Start(ctx context.Context) error {
 		for {
 			select {
 			case <-s.streamClosed:
-				s.seqLk.RLock()
-				c.LastSeq = s.lastSeq
-				s.seqLk.RUnlock()
+				c.LastSeq = s.GetSeq()
 				s.logger.Info("stream closed, saving cursor", "seq", c.LastSeq)
 				if err := s.writer.Save(&c).Error; err != nil {
 					s.logger.Error("failed to save cursor", "err", err)
@@ -186,9 +185,7 @@ func (s *Stream) Start(ctx context.Context) error {
 				s.logger.Info("cursor saved")
 				return
 			case <-ticker.C:
-				s.seqLk.RLock()
-				c.LastSeq = s.lastSeq
-				s.seqLk.RUnlock()
+				c.LastSeq = s.GetSeq()
 				s.logger.Info("saving cursor", "seq", c.LastSeq)
 				if err := s.writer.Save(&c).Error; err != nil {
 					s.logger.Error("failed to save cursor", "err", err)
@@ -207,6 +204,7 @@ func (s *Stream) Start(ctx context.Context) error {
 					return
 				case <-ticker.C:
 					s.logger.Info("deleting old events and records")
+					s.SetCleaningUp(true)
 					tx := s.writer.Exec("DELETE FROM events WHERE created_at < ?", time.Now().Add(-s.ttl))
 					if tx.Error != nil {
 						s.logger.Error("failed to delete old events", "err", tx.Error)
@@ -220,7 +218,7 @@ func (s *Stream) Start(ctx context.Context) error {
 					}
 
 					recordsDeleted := tx.RowsAffected
-
+					s.SetCleaningUp(false)
 					s.logger.Info("old events and records deleted", "events_deleted", eventsDeleted, "records", recordsDeleted)
 				}
 			}
@@ -283,6 +281,18 @@ func (s *Stream) GetSeq() int64 {
 	s.seqLk.RLock()
 	defer s.seqLk.RUnlock()
 	return s.lastSeq
+}
+
+func (s *Stream) SetCleaningUp(val bool) {
+	s.seqLk.Lock()
+	defer s.seqLk.Unlock()
+	s.cleaningUp = val
+}
+
+func (s *Stream) GetCleaningUp() bool {
+	s.seqLk.RLock()
+	defer s.seqLk.RUnlock()
+	return s.cleaningUp
 }
 
 func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
