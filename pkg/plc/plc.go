@@ -17,6 +17,7 @@ import (
 	"golang.org/x/time/rate"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Cursor struct {
@@ -52,7 +53,7 @@ func NewPLC(ctx context.Context, host, dataDir string, logger *slog.Logger, chec
 	}
 
 	// Migrate the database schema
-	err = db.AutoMigrate(&Cursor{}, &DBOp{})
+	err = db.AutoMigrate(&Cursor{}, &DBOp{}, &DBDid{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
@@ -188,6 +189,7 @@ func (plc *PLC) GetNextPage(ctx context.Context) (int, error) {
 	newOps := 0
 
 	dbOps := make([]*DBOp, 0)
+	dbDids := make([]*DBDid, 0)
 
 	// Response is JSONLines
 	dec := json.NewDecoder(resp.Body)
@@ -203,6 +205,7 @@ func (plc *PLC) GetNextPage(ctx context.Context) (int, error) {
 			return 0, fmt.Errorf("failed to convert op to dbOp: %w", err)
 		}
 
+		dbDids = append(dbDids, &DBDid{DID: op.DID, CreatedAt: op.CreatedAt})
 		dbOps = append(dbOps, dbOp)
 
 		newOps++
@@ -219,6 +222,11 @@ func (plc *PLC) GetNextPage(ctx context.Context) (int, error) {
 	err = plc.DB.CreateInBatches(dbOps, 100).Error
 	if err != nil {
 		return 0, fmt.Errorf("failed to save ops: %w", err)
+	}
+
+	err = plc.DB.Clauses(clause.OnConflict{DoNothing: true}).CreateInBatches(dbDids, 100).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to save dids: %w", err)
 	}
 
 	err = plc.DB.Save(plc.Cursor).Error
@@ -238,6 +246,12 @@ type DBOp struct {
 	Operation []byte
 	PDS       string `gorm:"index:idx_pds"`
 	Handle    string `gorm:"index:idx_handle"`
+}
+
+type DBDid struct {
+	Num       uint64 `gorm:"primarykey"`
+	DID       string `gorm:"uniqueIndex"`
+	CreatedAt time.Time
 }
 
 type PLCOp struct {
