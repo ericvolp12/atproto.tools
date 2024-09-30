@@ -36,7 +36,8 @@ type PLC struct {
 	Cursor        *Cursor
 	PageSize      int
 	CheckInterval time.Duration
-	DB            *gorm.DB
+	Writer        *gorm.DB
+	Reader        *gorm.DB
 	Limiter       *rate.Limiter
 
 	Client   *http.Client
@@ -49,27 +50,60 @@ func NewPLC(ctx context.Context, host, dataDir string, logger *slog.Logger, chec
 	logger = logger.With("module", "plc")
 
 	// Initialize a SQLite database
-	db, err := gorm.Open(sqlite.Open(filepath.Join(dataDir, "plc.db")), &gorm.Config{})
+	writerDB, err := gorm.Open(sqlite.Open(filepath.Join(dataDir, "plc.db")), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
 	// Migrate the database schema
-	err = db.AutoMigrate(&Cursor{}, &DBOp{}, &DBDid{})
+	err = writerDB.AutoMigrate(&Cursor{}, &DBOp{}, &DBDid{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
 
 	// Set Pragmas
-	err = db.Exec("PRAGMA journal_mode=WAL;").Error
+	err = writerDB.Exec("PRAGMA journal_mode=WAL;").Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to set journal mode: %w", err)
 	}
 
-	err = db.Exec("PRAGMA synchronous=normal;").Error
+	err = writerDB.Exec("PRAGMA synchronous=normal;").Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to set synchronous mode: %w", err)
 	}
+
+	writerRawDB, err := writerDB.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get raw database: %w", err)
+	}
+
+	// Set Max Open Connections
+	writerRawDB.SetMaxOpenConns(1)
+
+	// Initialize the Reader database
+	readerDB, err := gorm.Open(sqlite.Open(filepath.Join(dataDir, "plc.db")), &gorm.Config{SkipDefaultTransaction: true})
+	if err != nil {
+		return nil, fmt.Errorf("failed to open reader database: %w", err)
+	}
+
+	// Set Pragmas
+	err = readerDB.Exec("PRAGMA journal_mode=WAL;").Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to set journal mode: %w", err)
+	}
+
+	err = readerDB.Exec("PRAGMA synchronous=normal;").Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to set synchronous mode: %w", err)
+	}
+
+	readerRawDB, err := readerDB.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get raw reader database: %w", err)
+	}
+
+	// Set Max Open Connections
+	readerRawDB.SetMaxOpenConns(50)
 
 	client := &http.Client{
 		Timeout:   10 * time.Second,
@@ -79,7 +113,7 @@ func NewPLC(ctx context.Context, host, dataDir string, logger *slog.Logger, chec
 	limiter := rate.NewLimiter(rate.Limit(1), 1)
 
 	cursor := &Cursor{}
-	err = db.First(cursor).Error
+	err = writerDB.First(cursor).Error
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("failed to get cursor: %w", err)
@@ -91,7 +125,8 @@ func NewPLC(ctx context.Context, host, dataDir string, logger *slog.Logger, chec
 		Host:          host,
 		PageSize:      1000,
 		CheckInterval: checkInterval,
-		DB:            db,
+		Writer:        writerDB,
+		Reader:        readerDB,
 		Client:        client,
 		Cursor:        cursor,
 		Limiter:       limiter,
@@ -221,17 +256,17 @@ func (plc *PLC) GetNextPage(ctx context.Context) (int, error) {
 		return 0, nil
 	}
 
-	err = plc.DB.CreateInBatches(dbOps, 100).Error
+	err = plc.Writer.CreateInBatches(dbOps, 100).Error
 	if err != nil {
 		return 0, fmt.Errorf("failed to save ops: %w", err)
 	}
 
-	err = plc.DB.Clauses(clause.OnConflict{DoNothing: true}).CreateInBatches(dbDids, 100).Error
+	err = plc.Writer.Clauses(clause.OnConflict{DoNothing: true}).CreateInBatches(dbDids, 100).Error
 	if err != nil {
 		return 0, fmt.Errorf("failed to save dids: %w", err)
 	}
 
-	err = plc.DB.Save(plc.Cursor).Error
+	err = plc.Writer.Save(plc.Cursor).Error
 	if err != nil {
 		return 0, fmt.Errorf("failed to save cursor: %w", err)
 	}
@@ -283,7 +318,7 @@ func (plc *PLC) GetDIDDocument(ctx context.Context, did string) (*DIDDocument, e
 
 	// Get the latest DB op for the DID and unpack the operation into an identity.DIDDocument
 	var dbOp DBOp
-	err := plc.DB.Where("d_id = ?", did).Order("created_at desc").First(&dbOp).Error
+	err := plc.Reader.Where("d_id = ?", did).Order("created_at desc").First(&dbOp).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrNotFound
@@ -301,8 +336,6 @@ func (plc *PLC) GetDIDDocument(ctx context.Context, did string) (*DIDDocument, e
 	if !ok {
 		return nil, fmt.Errorf("failed to cast operation to map")
 	}
-
-	fmt.Printf("opMap: %#v\n", opMap)
 
 	// Unpack Handles/AKAs
 	akaInt, ok := opMap["alsoKnownAs"].([]interface{})
