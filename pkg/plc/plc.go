@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bluesky-social/indigo/atproto/identity"
+	"github.com/bluesky-social/indigo/atproto/syntax"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"golang.org/x/time/rate"
@@ -237,6 +239,11 @@ func (plc *PLC) GetNextPage(ctx context.Context) (int, error) {
 	return newOps, nil
 }
 
+type DIDDocument struct {
+	Context []string `json:"@context"`
+	identity.DIDDocument
+}
+
 type DBOp struct {
 	gorm.Model
 	DID       string    `gorm:"index:idx_did_cid;index:idx_did_created_at"`
@@ -260,6 +267,111 @@ type PLCOp struct {
 	CreatedAt time.Time `json:"createdAt"`
 	Nullified bool      `json:"nullified"`
 	Operation any       `json:"operation"`
+}
+
+var contexts = []string{
+	"https://www.w3.org/ns/did/v1",
+	"https://w3id.org/security/multikey/v1",
+	"https://w3id.org/security/suites/secp256k1-2019/v1",
+}
+
+var ErrNotFound = errors.New("not found")
+
+func (plc *PLC) GetDIDDocument(ctx context.Context, did string) (*DIDDocument, error) {
+	ctx, span := tracer.Start(ctx, "GetDIDDocument")
+	defer span.End()
+
+	// Get the latest DB op for the DID and unpack the operation into an identity.DIDDocument
+	var dbOp DBOp
+	err := plc.DB.Where("d_id = ?", did).Order("created_at desc").First(&dbOp).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to get latest op: %w", err)
+	}
+
+	op, err := dbOp.ToOp()
+
+	doc := &DIDDocument{Context: contexts}
+	doc.DID = syntax.DID(did)
+
+	// Cast the operation to a map
+	opMap, ok := op.Operation.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("failed to cast operation to map")
+	}
+
+	fmt.Printf("opMap: %#v\n", opMap)
+
+	// Unpack Handles/AKAs
+	akaInt, ok := opMap["alsoKnownAs"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("failed to cast alsoKnownAs to []interface{}")
+	}
+
+	aka := []string{}
+	for _, akaRaw := range akaInt {
+		akaStr, ok := akaRaw.(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to cast alsoKnownAs to string")
+		}
+		aka = append(aka, akaStr)
+	}
+
+	doc.AlsoKnownAs = aka
+
+	// Unpack Services
+	doc.Service = []identity.DocService{}
+	opServices, ok := opMap["services"].(map[string]interface{})
+	if ok {
+		for id, svc := range opServices {
+			svcMap, ok := svc.(map[string]interface{})
+			if !ok {
+				return nil, fmt.Errorf("service is not a map")
+			}
+
+			svcType, ok := svcMap["type"].(string)
+			if !ok {
+				return nil, fmt.Errorf("service map does not contain a 'type' key")
+			}
+
+			svcEndpoint, ok := svcMap["endpoint"].(string)
+			if !ok {
+				return nil, fmt.Errorf("service map does not contain a 'endpoint' key")
+			}
+
+			doc.Service = append(doc.Service, identity.DocService{
+				ID:              fmt.Sprintf("#%s", id),
+				Type:            svcType,
+				ServiceEndpoint: svcEndpoint,
+			})
+		}
+	}
+
+	// Unpack Verification Methods
+	doc.VerificationMethod = []identity.DocVerificationMethod{}
+	opVerificationMethods, ok := opMap["verificationMethods"].(map[string]interface{})
+	if ok {
+		for id, key := range opVerificationMethods {
+			vmID := fmt.Sprintf("%s#%s", did, id)
+			key, ok := key.(string)
+			if !ok {
+				return nil, fmt.Errorf("failed to cast verification method key to string")
+			}
+			// Trim the did:key: prefix
+			key = strings.TrimPrefix(key, "did:key:")
+
+			doc.VerificationMethod = append(doc.VerificationMethod, identity.DocVerificationMethod{
+				ID:                 vmID,
+				Type:               "Multikey",
+				Controller:         did,
+				PublicKeyMultibase: key,
+			})
+		}
+	}
+
+	return doc, nil
 }
 
 // GetSig returns the value of the "sig" key in the Operation map

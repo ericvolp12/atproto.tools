@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/ericvolp12/atproto.tools/pkg/plc"
+	"github.com/ericvolp12/atproto.tools/pkg/plc/handlers"
 	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/prometheus/client_golang/prometheus"
@@ -27,13 +28,27 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		&cli.BoolFlag{
-			Name:  "debug",
-			Usage: "enable debug logging",
+			Name:    "debug",
+			Usage:   "enable debug logging",
+			EnvVars: []string{"PLC_EXPORTER_DEBUG"},
 		},
 		&cli.StringFlag{
-			Name:  "listen-addr",
-			Usage: "listen address for http server",
-			Value: ":3260",
+			Name:    "listen-addr",
+			Usage:   "listen address for http server",
+			EnvVars: []string{"PLC_EXPORTER_LISTEN_ADDR"},
+			Value:   ":3260",
+		},
+		&cli.StringFlag{
+			Name:    "metrics-listen-addr",
+			Usage:   "listen address for http server",
+			EnvVars: []string{"PLC_EXPORTER_METRICS_LISTEN_ADDR"},
+			Value:   ":3261",
+		},
+		&cli.StringFlag{
+			Name:    "plc-host",
+			Usage:   "Host of the PLC Directory",
+			EnvVars: []string{"ATP_PLC_HOST"},
+			Value:   "https://plc.directory",
 		},
 		&cli.StringFlag{
 			Name:    "data-dir",
@@ -80,7 +95,7 @@ func PLCExporter(cctx *cli.Context) error {
 		return err
 	}
 
-	p, err := plc.NewPLC(ctx, "https://plc.directory", dataDir, logger, cctx.Duration("check-interval"))
+	p, err := plc.NewPLC(ctx, cctx.String("plc-host"), dataDir, logger, cctx.Duration("check-interval"))
 	if err != nil {
 		logger.Error("failed to create plc", "err", err)
 		return err
@@ -93,12 +108,14 @@ func PLCExporter(cctx *cli.Context) error {
 		}
 	}()
 
+	h := handlers.NewAPI(p)
+
 	// Create a new echo instance
 	e := echo.New()
 
 	// Add Prometheus middleware
 	echoProm := echoprometheus.NewMiddlewareWithConfig(echoprometheus.MiddlewareConfig{
-		Namespace: "graphd",
+		Namespace: "plc_mirror",
 		HistogramOptsFunc: func(opts prometheus.HistogramOpts) prometheus.HistogramOpts {
 			opts.Buckets = prometheus.ExponentialBuckets(0.00001, 2, 20)
 			return opts
@@ -108,6 +125,7 @@ func PLCExporter(cctx *cli.Context) error {
 
 	// Add Prometheus metrics handler
 	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
+	e.GET("/:did", h.HandleGetDIDDoc)
 
 	// Start the HTTP server
 	go func() {
