@@ -407,6 +407,38 @@ func (plc *PLC) GetDIDDocument(ctx context.Context, did string) (*DIDDocument, e
 	return doc, nil
 }
 
+func (plc *PLC) GetDIDByHandle(ctx context.Context, handle string) (string, error) {
+	ctx, span := tracer.Start(ctx, "GetDIDByHandle")
+	defer span.End()
+
+	var dbOp DBOp
+	err := plc.Reader.Where("handle = ?", handle).Order("created_at desc").First(&dbOp).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", ErrNotFound
+		}
+		return "", fmt.Errorf("failed to get latest op: %w", err)
+	}
+
+	return dbOp.DID, nil
+}
+
+func (plc *PLC) GetHandleByDID(ctx context.Context, did string) (string, error) {
+	ctx, span := tracer.Start(ctx, "GetHandleByDID")
+	defer span.End()
+
+	var dbOp DBOp
+	err := plc.Reader.Where("d_id = ?", did).Order("created_at desc").First(&dbOp).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", ErrNotFound
+		}
+		return "", fmt.Errorf("failed to get latest op: %w", err)
+	}
+
+	return dbOp.Handle, nil
+}
+
 // GetSig returns the value of the "sig" key in the Operation map
 func (op *PLCOp) GetSig() (string, error) {
 	// Check if op.Operation is a map and has a "sig" string key

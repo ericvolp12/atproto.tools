@@ -126,6 +126,7 @@ func PLCExporter(cctx *cli.Context) error {
 	// Add Prometheus metrics handler
 	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 	e.GET("/:did", h.HandleGetDIDDoc)
+	e.GET("/reverse/:handleOrDID", h.HandleReverseSimple)
 
 	// Start the HTTP server
 	go func() {
