@@ -14,6 +14,7 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/ericvolp12/atproto.tools/pkg/bq"
+	"github.com/ericvolp12/atproto.tools/pkg/parq"
 	"github.com/ericvolp12/atproto.tools/pkg/stream"
 	"github.com/ericvolp12/bsky-experiments/pkg/tracing"
 	"github.com/labstack/echo/v4"
@@ -63,6 +64,17 @@ func main() {
 			Usage:   "run database migrations",
 			Value:   true,
 			EnvVars: []string{"LG_MIGRATE_DB"},
+		},
+		&cli.BoolFlag{
+			Name:    "sqlite-persist",
+			Usage:   "enable sqlite persistence",
+			Value:   false,
+			EnvVars: []string{"LG_SQLITE_PERSIST"},
+		},
+		&cli.StringFlag{
+			Name:    "parquet-dir",
+			Usage:   "directory to write parquet files to, disabled if empty",
+			EnvVars: []string{"LG_PARQUET_DIR"},
 		},
 		&cli.DurationFlag{
 			Name:    "evt-record-ttl",
@@ -168,13 +180,32 @@ func LookingGlass(cctx *cli.Context) error {
 		}()
 	}
 
+	var parqInstance *parq.Parq
+	if cctx.String("parquet-dir") != "" {
+		logger.Info("parquet directory set, starting parquet writer")
+		parqInstance, err = parq.NewParq(
+			logger,
+			cctx.String("parquet-dir"),
+			"records",
+			50_000,
+			30*time.Second,
+		)
+		if err != nil {
+			logger.Error("failed to create parquet writer", "error", err)
+			return err
+		}
+		parqInstance.StartWriter()
+	}
+
 	s, err := stream.NewStream(
 		logger,
 		cctx.String("ws-url"),
 		cctx.String("sqlite-path"),
 		cctx.Bool("migrate-db"),
+		cctx.Bool("sqlite-persist"),
 		cctx.Duration("evt-record-ttl"),
 		bqInstance,
+		parqInstance,
 		cctx.Int64("plc-rate-limit"),
 		cctx.Bool("lookup-on-commit"),
 	)

@@ -21,4 +21,5 @@ services:
       - LG_SQLITE_PATH=/data/looking-glass.db
       - LG_MIGRATE_DB=true
       - LG_EVT_RECORD_TTL=12h
+      - LG_PARQUET_DIR=/data/parquet
       - GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json

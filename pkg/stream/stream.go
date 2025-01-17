@@ -23,6 +23,7 @@ import (
 	"github.com/bluesky-social/indigo/events/schedulers/parallel"
 	"github.com/bluesky-social/indigo/repo"
 	"github.com/ericvolp12/atproto.tools/pkg/bq"
+	"github.com/ericvolp12/atproto.tools/pkg/parq"
 	"github.com/gorilla/websocket"
 	"github.com/ipfs/go-cid"
 	"go.opentelemetry.io/otel"
@@ -46,14 +47,16 @@ type Stream struct {
 
 	streamClosed chan struct{}
 
-	writer *gorm.DB
-	reader *gorm.DB
-	ttl    time.Duration
+	persistSqlite bool
+	writer        *gorm.DB
+	reader        *gorm.DB
+	ttl           time.Duration
 
 	dir            *identity.CacheDirectory
 	lookupOnCommit bool
 
-	bq *bq.BQ
+	bq   *bq.BQ
+	parq *parq.Parq
 }
 
 var tracer = otel.Tracer("stream")
@@ -63,8 +66,10 @@ func NewStream(
 	socketURL string,
 	sqlitePath string,
 	migrate bool,
+	persistSqlite bool,
 	ttl time.Duration,
 	bq *bq.BQ,
+	pq *parq.Parq,
 	plcRateLimit int64,
 	lookupOnCommit bool,
 ) (*Stream, error) {
@@ -149,11 +154,13 @@ func NewStream(
 		logger:         logger,
 		socketURL:      u,
 		streamClosed:   make(chan struct{}),
+		persistSqlite:  persistSqlite,
 		writer:         writer,
 		reader:         reader,
 		ttl:            ttl,
 		dir:            &dir,
 		bq:             bq,
+		parq:           pq,
 		lookupOnCommit: lookupOnCommit,
 	}, nil
 }
@@ -195,7 +202,7 @@ func (s *Stream) Start(ctx context.Context) error {
 	}()
 
 	// Start a routine to delete old events and records every 5 minutes
-	if s.ttl > 0 {
+	if s.ttl > 0 && s.persistSqlite {
 		go func() {
 			ticker := time.NewTicker(5 * time.Minute)
 			for {
@@ -317,11 +324,13 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 		Since:       evt.Since,
 	}
 
-	defer func() {
-		if err := s.writer.Create(e).Error; err != nil {
-			s.logger.Error("failed to create event", "err", err)
-		}
-	}()
+	if s.persistSqlite {
+		defer func() {
+			if err := s.writer.Create(e).Error; err != nil {
+				s.logger.Error("failed to create event", "err", err)
+			}
+		}()
+	}
 
 	if evt.TooBig {
 		s.logger.Warn("commit too big", "repo", evt.Repo, "seq", evt.Seq)
@@ -348,7 +357,7 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 	did, err := syntax.ParseDID(evt.Repo)
 	if err != nil {
 		s.logger.Error("failed to parse DID", "err", err)
-	} else if s.lookupOnCommit {
+	} else if s.lookupOnCommit && s.persistSqlite {
 		id, fromCache, err := s.dir.LookupDIDWithCacheState(ctx, did)
 		if err != nil {
 			s.logger.Error("failed to lookup DID", "err", err)
@@ -414,18 +423,20 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 				continue
 			}
 
-			dbRecord := &Record{
-				FirehoseSeq: evt.Seq,
-				Repo:        recURI.Authority().String(),
-				Collection:  recURI.Collection().String(),
-				RKey:        recURI.RecordKey().String(),
-				Action:      op.Action,
-				Raw:         recJSON,
-			}
+			if s.persistSqlite {
+				dbRecord := &Record{
+					FirehoseSeq: evt.Seq,
+					Repo:        recURI.Authority().String(),
+					Collection:  recURI.Collection().String(),
+					RKey:        recURI.RecordKey().String(),
+					Action:      op.Action,
+					Raw:         recJSON,
+				}
 
-			if err := s.writer.Create(dbRecord).Error; err != nil {
-				logger.Error("failed to create db record", "err", err)
-				e.Error += fmt.Sprintf("failed to create db record (path: %q): %v", op.Path, err)
+				if err := s.writer.Create(dbRecord).Error; err != nil {
+					logger.Error("failed to create db record", "err", err)
+					e.Error += fmt.Sprintf("failed to create db record (path: %q): %v", op.Path, err)
+				}
 			}
 
 			if s.bq != nil {
@@ -443,6 +454,19 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 					logger.Error("failed to insert record into BQ", "err", err)
 				}
 			}
+
+			if s.parq != nil {
+				s.parq.EnqueueRecords([]*parq.Record{{
+					CreatedAt:   time.Now().UnixNano(),
+					FirehoseSeq: evt.Seq,
+					Repo:        recURI.Authority().String(),
+					Collection:  recURI.Collection().String(),
+					RKey:        recURI.RecordKey().String(),
+					Action:      op.Action,
+					Raw:         string(recJSON),
+				}})
+			}
+
 		case "delete":
 			recRawURI := fmt.Sprintf("at://%s/%s", evt.Repo, op.Path)
 			recURI, err := syntax.ParseATURI(recRawURI)
@@ -452,17 +476,19 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 				continue
 			}
 
-			dbRecord := &Record{
-				FirehoseSeq: evt.Seq,
-				Repo:        recURI.Authority().String(),
-				Collection:  recURI.Collection().String(),
-				RKey:        recURI.RecordKey().String(),
-				Action:      op.Action,
-			}
+			if s.persistSqlite {
+				dbRecord := &Record{
+					FirehoseSeq: evt.Seq,
+					Repo:        recURI.Authority().String(),
+					Collection:  recURI.Collection().String(),
+					RKey:        recURI.RecordKey().String(),
+					Action:      op.Action,
+				}
 
-			if err := s.writer.Create(dbRecord).Error; err != nil {
-				logger.Error("failed to create db record", "err", err)
-				e.Error += fmt.Sprintf("failed to create db record (path: %q): %v", op.Path, err)
+				if err := s.writer.Create(dbRecord).Error; err != nil {
+					logger.Error("failed to create db record", "err", err)
+					e.Error += fmt.Sprintf("failed to create db record (path: %q): %v", op.Path, err)
+				}
 			}
 
 			if s.bq != nil {
@@ -478,6 +504,17 @@ func (s *Stream) RepoCommit(evt *atproto.SyncSubscribeRepos_Commit) error {
 				if err := s.bq.InsertRecord(ctx, bqRecord); err != nil {
 					logger.Error("failed to insert record into BQ", "err", err)
 				}
+			}
+
+			if s.parq != nil {
+				s.parq.EnqueueRecords([]*parq.Record{{
+					CreatedAt:   time.Now().UnixNano(),
+					FirehoseSeq: evt.Seq,
+					Repo:        recURI.Authority().String(),
+					Collection:  recURI.Collection().String(),
+					RKey:        recURI.RecordKey().String(),
+					Action:      op.Action,
+				}})
 			}
 		default:
 			logger.Warn("unknown action", "action", op.Action)
@@ -514,7 +551,7 @@ func (s *Stream) RepoHandle(handle *atproto.SyncSubscribeRepos_Handle) error {
 		id, err := s.dir.LookupDID(ctx, did)
 		if err != nil {
 			s.logger.Error("failed to lookup DID", "err", err)
-		} else {
+		} else if s.persistSqlite {
 			if err := s.writer.Save(&Identity{
 				DID:    id.DID.String(),
 				Handle: id.Handle.String(),
@@ -532,11 +569,13 @@ func (s *Stream) RepoHandle(handle *atproto.SyncSubscribeRepos_Handle) error {
 		return nil
 	}
 
-	defer func() {
-		if err := s.writer.Create(e).Error; err != nil {
-			s.logger.Error("failed to create event", "err", err)
-		}
-	}()
+	if s.persistSqlite {
+		defer func() {
+			if err := s.writer.Create(e).Error; err != nil {
+				s.logger.Error("failed to create event", "err", err)
+			}
+		}()
+	}
 
 	e.Time = t.UnixNano()
 
@@ -570,7 +609,7 @@ func (s *Stream) RepoIdentity(id *atproto.SyncSubscribeRepos_Identity) error {
 		id, err := s.dir.LookupDID(ctx, did)
 		if err != nil {
 			s.logger.Error("failed to lookup DID", "err", err)
-		} else {
+		} else if s.persistSqlite {
 			if err := s.writer.Save(&Identity{
 				DID:    id.DID.String(),
 				Handle: id.Handle.String(),
@@ -588,11 +627,13 @@ func (s *Stream) RepoIdentity(id *atproto.SyncSubscribeRepos_Identity) error {
 		return nil
 	}
 
-	defer func() {
-		if err := s.writer.Create(e).Error; err != nil {
-			s.logger.Error("failed to create event", "err", err)
-		}
-	}()
+	if s.persistSqlite {
+		defer func() {
+			if err := s.writer.Create(e).Error; err != nil {
+				s.logger.Error("failed to create event", "err", err)
+			}
+		}()
+	}
 
 	e.Time = t.UnixNano()
 
@@ -632,11 +673,13 @@ func (s *Stream) RepoMigrate(migrate *atproto.SyncSubscribeRepos_Migrate) error 
 		return nil
 	}
 
-	defer func() {
-		if err := s.writer.Create(e).Error; err != nil {
-			s.logger.Error("failed to create event", "err", err)
-		}
-	}()
+	if s.persistSqlite {
+		defer func() {
+			if err := s.writer.Create(e).Error; err != nil {
+				s.logger.Error("failed to create event", "err", err)
+			}
+		}()
+	}
 
 	e.Time = t.UnixNano()
 
@@ -668,11 +711,13 @@ func (s *Stream) RepoTombstone(tomb *atproto.SyncSubscribeRepos_Tombstone) error
 		return nil
 	}
 
-	defer func() {
-		if err := s.writer.Create(e).Error; err != nil {
-			s.logger.Error("failed to create event", "err", err)
-		}
-	}()
+	if s.persistSqlite {
+		defer func() {
+			if err := s.writer.Create(e).Error; err != nil {
+				s.logger.Error("failed to create event", "err", err)
+			}
+		}()
+	}
 
 	e.Time = t.UnixNano()
 
