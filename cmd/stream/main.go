@@ -187,8 +187,8 @@ func LookingGlass(cctx *cli.Context) error {
 			logger,
 			cctx.String("parquet-dir"),
 			"records",
-			50_000,
-			30*time.Second,
+			1_000_000,
+			30*time.Minute,
 		)
 		if err != nil {
 			logger.Error("failed to create parquet writer", "error", err)
