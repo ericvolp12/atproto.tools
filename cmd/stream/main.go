@@ -329,6 +329,9 @@ func LookingGlass(cctx *cli.Context) error {
 	<-livenessCheckerShutdown
 	<-httpServerShutdown
 	<-streamShutdownFinished
+	if parqInstance != nil {
+		parqInstance.Shutdown()
+	}
 	logger.Info("shutdown complete")
 
 	return nil
