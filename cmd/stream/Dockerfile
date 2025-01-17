@@ -1,4 +1,4 @@
-FROM golang:1.21.6-bullseye AS build
+FROM golang:1.23-bullseye AS build
 
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV TZ="Etc/UTC"
@@ -18,11 +18,11 @@ COPY pkg ./pkg
 COPY cmd/stream ./cmd/stream
 
 RUN go build \
-        -v \
-        -trimpath \
-        -tags timetzdata \
-        -o /stream \
-        ./cmd/stream
+  -v \
+  -trimpath \
+  -tags timetzdata \
+  -o /stream \
+  ./cmd/stream
 
 FROM debian:bullseye-slim
 
